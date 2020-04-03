@@ -125,8 +125,6 @@ eEncoderState GetEncoderState() {
   }
   return Result;
 }
-const int buttonPin = 7;
-const int stopButtonPin = 8;
 
 void setup() {
   Wire.begin();
@@ -147,12 +145,10 @@ void setup() {
   pinMode(pin_Btn, INPUT_PULLUP); // Кнопка не подтянута к +5 поэтому задействуем внутренний pull-up резистор
   Serial.begin(9600);
   counter = 0;
-
-  pinMode(buttonPin, INPUT); 
-  pinMode(stopButtonPin, INPUT); 
 }
 
 bool isNeedPreView = true;
+bool isEncoderButtonPressed = false;
 void loop() {
 
   if(isNeedPreView){
@@ -161,20 +157,22 @@ void loop() {
     isNeedPreView = false;
   }
 
-  if(digitalRead(buttonPin) == HIGH){
+  if(isEncoderButtonPressed){
     goToOption();
   }
+
   switch (GetEncoderState()) {
     case eNone:
       return;
     case eButton: { // Нажали кнопку
-        counter = 0;
+        isEncoderButtonPressed = true;
         break;
       }
     case eLeft: {   // Энкодер вращается влево
         counter--;
         prtintTitle();
         printOption();
+        isEncoderButtonPressed = false;
         break;
         
       }
@@ -182,6 +180,7 @@ void loop() {
         counter++;
         prtintTitle();
         printOption();
+        isEncoderButtonPressed = false;
         break;
       }
   }
@@ -191,18 +190,21 @@ void loop() {
 void encoder(){
   switch (GetEncoderState()) {
     case eNone:
+      isEncoderButtonPressed = false;
       return;
     case eButton: { // Нажали кнопку
-        counter = 0;
+        isEncoderButtonPressed = true;
         break;
       }
     case eLeft: {   // Энкодер вращается влево
         counter--;
+        isEncoderButtonPressed = false;
         break;
         
       }
     case eRight: {  // Энкодер вращается вправо
         counter++;
+        isEncoderButtonPressed = false;
         break;
       }
   }
@@ -341,8 +343,8 @@ void linearMovement(){ // Линейного перемещения
   counter = 0;
   int last = counter;
   bool isNeedPrint = true;
-  
-  while(digitalRead(stopButtonPin) == LOW){
+  delay(50);
+  do {
     encoder();
     if(last != counter || isNeedPrint){
       printlinearMovement();
@@ -351,8 +353,9 @@ void linearMovement(){ // Линейного перемещения
       isNeedPrint = false;
     }
     delay(10);
-  }
+  }while (!isEncoderButtonPressed);
   isNeedPreView = true;
+  isEncoderButtonPressed = false;
 }
 
 void printlinearMovement(){
@@ -376,8 +379,8 @@ void angleMovement(){ // Углового перемещения
   counter = 0;
   int last = counter;
   bool isNeedPrint = true;
-  
-  while(digitalRead(stopButtonPin) == LOW){
+  delay(50);
+  do {
     encoder();
     if(last != counter || isNeedPrint){
       printAngleMovement();
@@ -386,8 +389,9 @@ void angleMovement(){ // Углового перемещения
       isNeedPrint = false;
     }
     delay(10);
-  }
+  }while (!isEncoderButtonPressed);
   isNeedPreView = true;
+  isEncoderButtonPressed = false;
 }
 
 void printAngleMovement(){
@@ -410,8 +414,8 @@ void oscillation(){ // Колебания
   counter = 0;
   int last = counter;
   bool isNeedPrint = true;
-  
-  while(digitalRead(stopButtonPin) == LOW){
+  delay(50);
+  do {
     encoder();
     if(last != counter || isNeedPrint){
       printOscillation();
@@ -420,8 +424,9 @@ void oscillation(){ // Колебания
       isNeedPrint = false;
     }
     delay(10);
-  }
+  }while (!isEncoderButtonPressed);
   isNeedPreView = true;
+  isEncoderButtonPressed = false;
 }
 
 void printOscillation(){
@@ -447,8 +452,8 @@ void stopwatch(){ // Секундомер
   counter = 0;
   int last = counter;
   bool isNeedPrint = true;
-  
-  while(digitalRead(stopButtonPin) == LOW){
+  delay(50);
+  do {
     encoder();
     if(last != counter || isNeedPrint){
       printStopwatch();
@@ -457,8 +462,9 @@ void stopwatch(){ // Секундомер
       isNeedPrint = false;
     }
     delay(10);
-  }
+  }while (!isEncoderButtonPressed);
   isNeedPreView = true;
+  isEncoderButtonPressed = false;
 }
 
 void printStopwatch(){
@@ -479,8 +485,8 @@ void timer(){ // Таймер
   counter = 0;
   int last = counter;
   bool isNeedPrint = true;
-  
-  while(digitalRead(stopButtonPin) == LOW){
+  delay(50);
+  do {
     encoder();
     if(last != counter || isNeedPrint){
       printTimer();
@@ -489,8 +495,9 @@ void timer(){ // Таймер
       isNeedPrint = false;
     }
     delay(10);
-  }
+  }while (!isEncoderButtonPressed);
   isNeedPreView = true;
+  isEncoderButtonPressed = false;
 }
 
 void printTimer(){
@@ -507,3 +514,4 @@ void printTimer(){
    lcd.print(" ");
    lcd.print(counter);
 }
+ 
