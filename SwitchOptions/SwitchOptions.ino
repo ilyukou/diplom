@@ -208,13 +208,50 @@ void encoder(){
   }
 }
 void prtintTitle(){
+  if(counter > 4){
+    counter = 0;
+  }
+
+  if(counter < 0){
+    counter = 4;
+  }
+  
+  Serial.println(counter);
+
   lcd.setCursor(0,0);
   lcd.clear();
   
   lcd.print("PE");
   lcd.print(char(6));
   lcd.print(char(4));  
-  lcd.print("M :");
+  lcd.print("M ");
+
+  if(counter != 0 && counter != 1){
+    lcd.print(": ");
+  }else{
+    lcd.print(counter+1);
+    lcd.print(".");
+  }
+  
+  
+
+  if(counter == 0){ 
+
+    lcd.print(char(2));
+    lcd.print(char(4));
+    lcd.print("HE");
+    lcd.print(char(0));
+    lcd.print("HOE");
+  }
+
+  if(counter == 1){
+    // ДВИЖЕНИЕ
+    
+    lcd.print("Y");
+    lcd.print(char(1));
+    lcd.print(char(2));
+    lcd.print("OBOE");
+  }
 }
 
 void printOption(){
@@ -228,22 +265,30 @@ void printOption(){
     counter = 4;
   }
 
-  lcd.print(counter+1);
-  lcd.print(". "); 
+  if(counter != 0 && counter != 1){
+    lcd.print(counter+1);
+    lcd.print(". ");
+  }
+
   switch(counter){
     case 0: // ЛИНЕЙНОЕ
-      lcd.print(char(2));
+      lcd.print(char(3));
+      lcd.print("B");
       lcd.print(char(4));
-      lcd.print("HE");
-      lcd.print(char(0));
-      lcd.print("HOE");
+      lcd.print(char(6));
+      lcd.print("EH");
+      lcd.print(char(4));
+      lcd.print("E");
       break;
       
     case 1:// УГЛОВОЕ
-      lcd.print("Y");
-      lcd.print(char(1));
-      lcd.print(char(2));
-      lcd.print("OBOE");
+      lcd.print(char(3));
+      lcd.print("B");
+      lcd.print(char(4));
+      lcd.print(char(6));
+      lcd.print("EH");
+      lcd.print(char(4));
+      lcd.print("E");
       break;
       
     case 2: // ПЕРИОД
