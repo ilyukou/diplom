@@ -227,33 +227,6 @@ void prtintTitle(){
   lcd.print(char(6));
   lcd.print(char(4));  
   lcd.print("M ");
-
-  if(counter != 0 && counter != 1){
-    lcd.print(": ");
-  }else{
-    lcd.print(counter+1);
-    lcd.print(".");
-  }
-  
-  
-
-  if(counter == 0){ 
-
-    lcd.print(char(2));
-    lcd.print(char(4));
-    lcd.print("HE");
-    lcd.print(char(0));
-    lcd.print("HOE");
-  }
-
-  if(counter == 1){
-    // ДВИЖЕНИЕ
-    
-    lcd.print("Y");
-    lcd.print(char(1));
-    lcd.print(char(2));
-    lcd.print("OBOE");
-  }
 }
 
 void printOption(){
@@ -267,40 +240,10 @@ void printOption(){
     counter = 4;
   }
 
-  if(counter != 0 && counter != 1){
-    lcd.print(counter+1);
-    lcd.print(". ");
-  }
+  lcd.print(counter+1);
+  lcd.print(". ");
 
   switch(counter){
-    case 0: // ЛИНЕЙНОЕ
-      lcd.print(char(3));
-      lcd.print("B");
-      lcd.print(char(4));
-      lcd.print(char(6));
-      lcd.print("EH");
-      lcd.print(char(4));
-      lcd.print("E");
-      break;
-      
-    case 1:// УГЛОВОЕ
-      lcd.print(char(3));
-      lcd.print("B");
-      lcd.print(char(4));
-      lcd.print(char(6));
-      lcd.print("EH");
-      lcd.print(char(4));
-      lcd.print("E");
-      break;
-      
-    case 2: // ПЕРИОД
-      lcd.print(char(7));
-      lcd.print("EP");
-      lcd.print(char(4));
-      lcd.print("O");
-      lcd.print(char(3));
-      break;
-
     case 3: // СЕКУНДОМЕР
       lcd.print("CEKYH");
       lcd.print(char(3));
@@ -363,7 +306,7 @@ void printlinearMovement(){
      counter = 0;
    }
    
-   lcd.setCursor(0,1);
+   lcd.setCursor(0,0);
    lcd.clear();
 
    lcd.print("PACCTO");
@@ -373,6 +316,14 @@ void printlinearMovement(){
    lcd.print("E");
    lcd.print(" ");
    lcd.print(counter);
+
+   lcd.setCursor(0,1);
+   lcd.print("BPEM");
+   lcd.print(char(5));
+   lcd.print(" ");
+   lcd.print(0);
+   
+   lcd.print(" сек.");
 }
 
 void angleMovement(){ // Углового перемещения
@@ -399,7 +350,7 @@ void printAngleMovement(){
      counter = 0;
    }
    
-   lcd.setCursor(0,1);
+   lcd.setCursor(0,0);
    lcd.clear();
 
    lcd.print("Y");
@@ -408,6 +359,14 @@ void printAngleMovement(){
    lcd.print(char(2));
    lcd.print(" ");
    lcd.print(counter);
+
+   lcd.setCursor(0,1);
+   lcd.print("BPEM");
+   lcd.print(char(5));
+   lcd.print(" ");
+   lcd.print(0);
+   
+   lcd.print(" сек.");
 }
 
 void oscillation(){ // Колебания
@@ -434,7 +393,7 @@ void printOscillation(){
      counter = 0;
    }
    
-   lcd.setCursor(0,1);
+   lcd.setCursor(0,0);
    lcd.clear();
 
    lcd.print("KO");
@@ -446,6 +405,14 @@ void printOscillation(){
    lcd.print(char(5));
    lcd.print(" ");
    lcd.print(counter);
+
+   lcd.setCursor(0,1);
+   lcd.print("BPEM");
+   lcd.print(char(5));
+   lcd.print(" ");
+   lcd.print(0);
+   
+   lcd.print(" сек.");
 }
 
 void stopwatch(){ // Секундомер
@@ -472,13 +439,27 @@ void printStopwatch(){
      counter = 0;
    }
    
-   lcd.setCursor(0,1);
+   lcd.setCursor(0,0);
    lcd.clear();
 
-   lcd.print("BPEM");
-   lcd.print(char(5));
-   lcd.print(" ");
-   lcd.print(counter);
+  lcd.print("HA");
+  lcd.print(char(6));
+  lcd.print("M");
+  lcd.print(char(4));
+  lcd.print("TE");
+
+  lcd.print(" ");
+
+  lcd.print("KHO");
+  lcd.print(char(7));
+  lcd.print("KY");
+
+
+  lcd.setCursor(0,1);
+  lcd.print("      ");
+  lcd.print(char(7));
+  lcd.print("YCK");
+  lcd.print(" ");
 }
 
 void timer(){ // Таймер
@@ -505,13 +486,17 @@ void printTimer(){
      counter = 0;
    }
    
-   lcd.setCursor(0,1);
+   lcd.setCursor(0,0);
    lcd.clear();
+  lcd.print("YCTAHOB");
+  lcd.print(char(4));
+  lcd.print("TE"); 
 
-   lcd.print("TA");
-   lcd.print(char(0));
-   lcd.print("MEP");
+  lcd.setCursor(0,1);
+   lcd.print("BPEM");
+   lcd.print(char(5));
    lcd.print(" ");
    lcd.print(counter);
+   lcd.print(" сек.");
 }
  
