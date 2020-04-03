@@ -125,6 +125,8 @@ eEncoderState GetEncoderState() {
   }
   return Result;
 }
+const int buttonPin = 7;
+const int stopButtonPin = 8;
 
 void setup() {
   Wire.begin();
@@ -145,6 +147,9 @@ void setup() {
   pinMode(pin_Btn, INPUT_PULLUP); // Кнопка не подтянута к +5 поэтому задействуем внутренний pull-up резистор
   Serial.begin(9600);
   counter = 0;
+
+  pinMode(buttonPin, INPUT); 
+  pinMode(stopButtonPin, INPUT); 
 }
 
 bool isNeedPreView = true;
@@ -155,7 +160,10 @@ void loop() {
     printOption();
     isNeedPreView = false;
   }
-  
+
+  if(digitalRead(buttonPin) == HIGH){
+    goToOption();
+  }
   switch (GetEncoderState()) {
     case eNone:
       return;
@@ -177,9 +185,28 @@ void loop() {
         break;
       }
   }
-  delay(200);
+  delay(100);
 }
 
+void encoder(){
+  switch (GetEncoderState()) {
+    case eNone:
+      return;
+    case eButton: { // Нажали кнопку
+        counter = 0;
+        break;
+      }
+    case eLeft: {   // Энкодер вращается влево
+        counter--;
+        break;
+        
+      }
+    case eRight: {  // Энкодер вращается вправо
+        counter++;
+        break;
+      }
+  }
+}
 void prtintTitle(){
   lcd.setCursor(0,0);
   lcd.clear();
@@ -239,4 +266,199 @@ void printOption(){
       lcd.print("MEP");
       break;
   }
+}
+
+void goToOption(){
+  switch(counter){
+    case 0: // ЛИНЕЙНОЕ
+      linearMovement();
+      break;
+      
+    case 1:// УГЛОВОЕ
+      angleMovement();
+      break;
+      
+    case 2: // ПЕРИОД
+      oscillation();
+      break;
+
+    case 3: // СЕКУНДОМЕР
+      stopwatch();
+      break;
+
+    case 4: // ТАЙМЕР
+      timer();
+      break;
+  }
+}
+
+void linearMovement(){ // Линейного перемещения
+  counter = 0;
+  int last = counter;
+  bool isNeedPrint = true;
+  
+  while(digitalRead(stopButtonPin) == LOW){
+    encoder();
+    if(last != counter || isNeedPrint){
+      printlinearMovement();
+      
+      last = counter;
+      isNeedPrint = false;
+    }
+    delay(10);
+  }
+  isNeedPreView = true;
+}
+
+void printlinearMovement(){
+   if(counter < 0 ){
+     counter = 0;
+   }
+   
+   lcd.setCursor(0,1);
+   lcd.clear();
+
+   lcd.print("PACCTO");
+   lcd.print(char(5));
+   lcd.print("H");
+   lcd.print(char(4));
+   lcd.print("E");
+   lcd.print(" ");
+   lcd.print(counter);
+}
+
+void angleMovement(){ // Углового перемещения
+  counter = 0;
+  int last = counter;
+  bool isNeedPrint = true;
+  
+  while(digitalRead(stopButtonPin) == LOW){
+    encoder();
+    if(last != counter || isNeedPrint){
+      printAngleMovement();
+      
+      last = counter;
+      isNeedPrint = false;
+    }
+    delay(10);
+  }
+  isNeedPreView = true;
+}
+
+void printAngleMovement(){
+  if(counter < 0 ){
+     counter = 0;
+   }
+   
+   lcd.setCursor(0,1);
+   lcd.clear();
+
+   lcd.print("Y");
+   lcd.print(char(1));
+   lcd.print("O");
+   lcd.print(char(2));
+   lcd.print(" ");
+   lcd.print(counter);
+}
+
+void oscillation(){ // Колебания
+  counter = 0;
+  int last = counter;
+  bool isNeedPrint = true;
+  
+  while(digitalRead(stopButtonPin) == LOW){
+    encoder();
+    if(last != counter || isNeedPrint){
+      printOscillation();
+      
+      last = counter;
+      isNeedPrint = false;
+    }
+    delay(10);
+  }
+  isNeedPreView = true;
+}
+
+void printOscillation(){
+  if(counter < 0 ){
+     counter = 0;
+   }
+   
+   lcd.setCursor(0,1);
+   lcd.clear();
+
+   lcd.print("KO");
+   lcd.print(char(2));
+   lcd.print("E");
+   lcd.print("b");
+   lcd.print("AH");
+   lcd.print(char(4));
+   lcd.print(char(5));
+   lcd.print(" ");
+   lcd.print(counter);
+}
+
+void stopwatch(){ // Секундомер
+  counter = 0;
+  int last = counter;
+  bool isNeedPrint = true;
+  
+  while(digitalRead(stopButtonPin) == LOW){
+    encoder();
+    if(last != counter || isNeedPrint){
+      printStopwatch();
+      
+      last = counter;
+      isNeedPrint = false;
+    }
+    delay(10);
+  }
+  isNeedPreView = true;
+}
+
+void printStopwatch(){
+  if(counter < 0 ){
+     counter = 0;
+   }
+   
+   lcd.setCursor(0,1);
+   lcd.clear();
+
+   lcd.print("BPEM");
+   lcd.print(char(5));
+   lcd.print(" ");
+   lcd.print(counter);
+}
+
+void timer(){ // Таймер
+  counter = 0;
+  int last = counter;
+  bool isNeedPrint = true;
+  
+  while(digitalRead(stopButtonPin) == LOW){
+    encoder();
+    if(last != counter || isNeedPrint){
+      printTimer();
+      
+      last = counter;
+      isNeedPrint = false;
+    }
+    delay(10);
+  }
+  isNeedPreView = true;
+}
+
+void printTimer(){
+  if(counter < 0 ){
+     counter = 0;
+   }
+   
+   lcd.setCursor(0,1);
+   lcd.clear();
+
+   lcd.print("TA");
+   lcd.print(char(0));
+   lcd.print("MEP");
+   lcd.print(" ");
+   lcd.print(counter);
 }
