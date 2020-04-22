@@ -323,7 +323,7 @@ void printlinearMovement(){
    lcd.print(" ");
    lcd.print(0);
    
-   lcd.print(" сек.");
+   lcd.print(" cek.");
 }
 
 void angleMovement(){ // Углового перемещения
@@ -366,7 +366,7 @@ void printAngleMovement(){
    lcd.print(" ");
    lcd.print(0);
    
-   lcd.print(" сек.");
+   lcd.print(" cek.");
 }
 
 void oscillation(){ // Колебания
@@ -412,7 +412,7 @@ void printOscillation(){
    lcd.print(" ");
    lcd.print(0);
    
-   lcd.print(" сек.");
+   lcd.print(" cek.");
 }
 
 void stopwatch(){ // Секундомер
@@ -497,6 +497,6 @@ void printTimer(){
    lcd.print(char(5));
    lcd.print(" ");
    lcd.print(counter);
-   lcd.print(" сек.");
+   lcd.print(" cek.");
 }
  
