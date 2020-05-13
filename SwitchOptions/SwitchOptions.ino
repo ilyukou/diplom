@@ -268,27 +268,27 @@ void printOption(){
   switch (counter){
 
   case 0: // ЛИНЕЙНОЕ
-    lcd.print("LINEAR");
+    lcd.print("1. LINEAR");
     break;
 
   case 1: // СЕКУНДОМЕР
-    lcd.print("CEKYH");
+    lcd.print("5. CEKYH");
     lcd.print(char(3));
     lcd.print("OMEP");
     break;
 
   case 2: // ТАЙМЕР
-    lcd.print("TA");
+    lcd.print("4. TA");
     lcd.print(char(0));
     lcd.print("MEP");
     break;
 
   case 3: // ПЕРИОД
-    lcd.print("PERIOD");
+    lcd.print("3. PERIOD");
     break;
 
   case 4: // УГЛОВОЕ
-    lcd.print("ANGULAR");
+    lcd.print("2. ANGULAR");
       break;    
   }
 }
