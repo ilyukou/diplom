@@ -86,8 +86,8 @@ byte p[8] = {
 #define pin_DT 4
 #define pin_Btn 3
 
-const int pin_Optocoupler 5 //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
-const int pin_Impulse_Counter 6 //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
+const int pin_Optocoupler = 5; //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
+const int pin_Impulse_Counter = 6; //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
 
 unsigned long CurrentTime, LastTime;
 enum eEncoderState
@@ -180,6 +180,7 @@ void loop()
   if (isEncoderButtonPressed)
   {
     goToOption();
+    isNeedPreView = true; // указывает что после работы с опцией нужно отрисовать экран заново
   }
 
   switch (GetEncoderState())
@@ -225,13 +226,13 @@ void encoder()
   }
   case eLeft:
   { // Энкодер вращается влево
-    counter--;
+    counter++;
     isEncoderButtonPressed = false;
     break;
   }
   case eRight:
   { // Энкодер вращается вправо
-    counter++;
+    counter--;
     isEncoderButtonPressed = false;
     break;
   }
@@ -299,24 +300,40 @@ void goToOption()
   {
   case 0: // ЛИНЕЙНОЕ
     linearMovement();
+    counter = 0; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    exitFromOption();
     break;
 
   case 1: // УГЛОВОЕ
     angleMovement();
+    counter = 1; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    exitFromOption();
     break;
 
   case 2: // ПЕРИОД
     oscillation();
+    counter = 2; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    exitFromOption();
     break;
 
   case 3: // СЕКУНДОМЕР
     stopwatch();
+    counter = 3; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    exitFromOption();
     break;
 
   case 4: // ТАЙМЕР
     timer();
+    counter = 4; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    exitFromOption();
     break;
   }
+}
+
+void exitFromOption(){
+  // две строчки снизу помогают выйти из режима
+  encoder();
+  delay(500);
 }
 
 /***********************************  LINEINOE PEREME and his methods START ***********************************/
@@ -508,8 +525,8 @@ void printOscillation()
 void stopwatch()
 { // Секундомер
 
-  const byte analogPinForStartButtonOfStopWatch = 2; //номер порта для старта
-  const byte analogPinForStopButtonOfStopWatch = 3;  //номер порта для стопа
+  const byte analogPinForStartButtonOfStopWatch = 3; //номер порта для старта
+  const byte analogPinForStopButtonOfStopWatch = 2;  //номер порта для стопа
 
   long timeOfStopWatch = 0;
   long currentTime = 0;
@@ -533,69 +550,79 @@ void stopwatch()
       while (!isAnalogButtonPressed(analogPinForStopButtonOfStopWatch))
       {
 
-        delay(100);
+        delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
         currentTime = millis() - timeOfStopWatch;
 
         printTimeForStopWatch(currentTime);
       }
-      // Вывести значение
-      printTimeForStopWatch(currentTime);
-      delay(1000);
+      printResultTimeForStopWatch(currentTime);
+
+      delay(2500); // 2.5c время показки значения, перед выходов обратно в меню секундомера
+
+      // возвращение значений в исходное положение
       isNeedPreView = true;
     }
 
-    encoder(); // значение нажатия энкодера
+    encoder(); // проверяем вдруг кнопка будет нажата, тогда цикл while прекратиться
 
   } while (!isEncoderButtonPressed);
 }
 
 void printTimeForStopWatch(long timeToPrint)
 {
-  // FIXME написать функцию для вывода времени секундомера
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print("TIME ");
+
+  // example. timeToPrint = 5672 millis
+  long second = timeToPrint / 1000; // 5
+  long millisecond = timeToPrint - second * 1000; // 672
+  millisecond = millisecond / 10; // 67
+
+  // 5.67
+  lcd.print(second);
+  lcd.print(".");
+  lcd.print(millisecond);
+  lcd.setCursor(0, 1);
+  lcd.print("    seconds.    ");
 }
 
 void printPreViewForStopWatch()
 {
-  // FIXME "нажмите пуск для запуска секундомера"
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print("  PLEASE PRESS  ");
+  lcd.setCursor(0, 1);
+  lcd.print("     START.     ");
+}
+
+void printResultTimeForStopWatch(long timeToPrint){
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print("RESULT ");
+
+  // example. timeToPrint = 5672 millis
+  long second = timeToPrint / 1000; // 5
+  long millisecond = timeToPrint - second * 1000; // 672
+  millisecond = millisecond / 10; // 67
+
+  // 5.67
+  lcd.print(second);
+  lcd.print(".");
+  lcd.print(millisecond);
+  lcd.setCursor(0, 1);
+  lcd.print("    seconds.    ");
 }
 
 /***********************************  STOP WATCH and his methods END ***********************************/
 
-void printStopwatch()
-{
-  if (counter < 0)
-  {
-    counter = 0;
-  }
-
-  lcd.setCursor(0, 0);
-  lcd.clear();
-
-  lcd.print("HA");
-  lcd.print(char(6));
-  lcd.print("M");
-  lcd.print(char(4));
-  lcd.print("TE");
-
-  lcd.print(" ");
-
-  lcd.print("KHO");
-  lcd.print(char(7));
-  lcd.print("KY");
-
-  lcd.setCursor(0, 1);
-  lcd.print("      ");
-  lcd.print(char(7));
-  lcd.print("YCK");
-  lcd.print(" ");
-}
 
 /***********************************  TIMER and his methods START ***********************************/
 
 void timer()
 { // Таймер
 
-  byte analogPinForStartButtonOfTimer = 2; //номер порта для старта
+  byte analogPinForStartButtonOfTimer = 3; //номер порта для старта
   double stepForTimer = 0.5;               //секунды
   double setTimeForTimer = 0;
   double currentTime = 0;
@@ -612,7 +639,6 @@ void timer()
   delay(50);
   do
   {
-    encoder();
     if (last != counter || isNeedPreView) {
 
       counter = counter <= 0 ? 0 : counter;
@@ -624,29 +650,60 @@ void timer()
 
       isNeedPreView = false;
     }
-    delay(10);
-
     if (isAnalogButtonPressed(analogPinForStartButtonOfTimer))
     {
       needTimeForTimer = millis() + ( setTimeForTimer * 1000 );
       while (needTimeForTimer > millis())
       { 
+        delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
         currentTime = needTimeForTimer - millis();
         printRemaimingTimeForTimer(currentTime);
       }
-      // время закончилось. Нужно оповестить, что можно задавать значение заново
+      printWhenTimeEndsForTimer();
+      delay(1000); // показывать уведомление об окончании времени 1с
+
+      // возвращение значений в исходное положение
+      counter = 0;
+      isNeedPreView = true;
     }
+
+    encoder(); // проверяем вдруг кнопка будет нажата, тогда цикл while прекратиться
 
   } while (!isEncoderButtonPressed);
 }
 
 void printPreViewForTimer(double setTimeToPrint)
 {
-  //FIXME написать вывод меню для таймера "Заданное время: 0.0 сек"
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print("SET TIME ");
+  lcd.print(setTimeToPrint);
+  lcd.setCursor(0, 1);
+  lcd.print("    seconds.    ");
 }
 
 void printRemaimingTimeForTimer(double timerTimeToPrint){
-  //FIXME написать функцию вывадящую оставшееся время
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print("TIME ");
+
+  // example. timeToPrint = 5672 millis
+  long second = timerTimeToPrint / 1000; // 5
+  long millisecond = timerTimeToPrint - second * 1000; // 672
+  millisecond = millisecond / 10; // 67
+
+  // 5.67
+  lcd.print(second);
+  lcd.print(".");
+  lcd.print(millisecond);
+  lcd.setCursor(0, 1);
+  lcd.print("    seconds.    ");
+}
+
+void printWhenTimeEndsForTimer(){
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print("      END.      ");
 }
 
 /***********************************  TIMER and his methods END ***********************************/
@@ -666,23 +723,3 @@ bool isPinHigh(byte pinNumber){
 
 /***********************************  COMMON methods END ***********************************/
 
-void printTimer()
-{
-  if (counter < 0)
-  {
-    counter = 0;
-  }
-
-  lcd.setCursor(0, 0);
-  lcd.clear();
-  lcd.print("YCTAHOB");
-  lcd.print(char(4));
-  lcd.print("TE");
-
-  lcd.setCursor(0, 1);
-  lcd.print("BPEM");
-  lcd.print(char(5));
-  lcd.print(" ");
-  lcd.print(counter);
-  lcd.print(" cek.");
-}
