@@ -546,12 +546,12 @@ void stopwatch()
 
     if (isAnalogButtonPressed(analogPinForStartButtonOfStopWatch))
     {
-      timeOfStopWatch = millis();
+      timeOfStopWatch = micros();
       while (!isAnalogButtonPressed(analogPinForStopButtonOfStopWatch))
       {
 
         delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
-        currentTime = millis() - timeOfStopWatch;
+        currentTime = micros() - timeOfStopWatch;
 
         printTimeForStopWatch(currentTime);
       }
@@ -574,10 +574,10 @@ void printTimeForStopWatch(long timeToPrint)
   lcd.clear();
   lcd.print("TIME ");
 
-  // example. timeToPrint = 5672 millis
-  long second = timeToPrint / 1000; // 5
-  long millisecond = timeToPrint - second * 1000; // 672
-  millisecond = millisecond / 10; // 67
+  // example. timeToPrint = 5672000 millis
+  long second = timeToPrint / 1000000; // 5
+  long millisecond = timeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
 
   // 5.67
   lcd.print(second);
@@ -601,10 +601,10 @@ void printResultTimeForStopWatch(long timeToPrint){
   lcd.clear();
   lcd.print("RESULT ");
 
-  // example. timeToPrint = 5672 millis
-  long second = timeToPrint / 1000; // 5
-  long millisecond = timeToPrint - second * 1000; // 672
-  millisecond = millisecond / 10; // 67
+  // example. timeToPrint = 5672000 millis
+  long second = timeToPrint / 1000000; // 5
+  long millisecond = timeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
 
   // 5.67
   lcd.print(second);
@@ -652,11 +652,11 @@ void timer()
     }
     if (isAnalogButtonPressed(analogPinForStartButtonOfTimer))
     {
-      needTimeForTimer = millis() + ( setTimeForTimer * 1000 );
-      while (needTimeForTimer > millis())
+      needTimeForTimer = micros() + ( setTimeForTimer * 1000000 );
+      while (needTimeForTimer > micros())
       { 
         delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
-        currentTime = needTimeForTimer - millis();
+        currentTime = needTimeForTimer - micros();
         printRemaimingTimeForTimer(currentTime);
       }
       printWhenTimeEndsForTimer();
@@ -687,10 +687,10 @@ void printRemaimingTimeForTimer(double timerTimeToPrint){
   lcd.clear();
   lcd.print("TIME ");
 
-  // example. timeToPrint = 5672 millis
-  long second = timerTimeToPrint / 1000; // 5
-  long millisecond = timerTimeToPrint - second * 1000; // 672
-  millisecond = millisecond / 10; // 67
+  // example. timeToPrint = 5672000 millis
+  long second = timerTimeToPrint / 1000000; // 5
+  long millisecond = timerTimeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
 
   // 5.67
   lcd.print(second);
@@ -722,4 +722,3 @@ bool isPinHigh(byte pinNumber){
 }
 
 /***********************************  COMMON methods END ***********************************/
-
