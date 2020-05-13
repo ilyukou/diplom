@@ -167,86 +167,78 @@ void setup()
 bool isNeedPreView = true;
 bool isEncoderButtonPressed = false;
 
-void loop()
-{
+void loop(){
 
-  if (isNeedPreView)
-  {
+  if (isNeedPreView){
     prtintTitle();
     printOption();
     isNeedPreView = false;
   }
 
-  if (isEncoderButtonPressed)
-  {
+  if (isEncoderButtonPressed){
     goToOption();
     isNeedPreView = true; // указывает что после работы с опцией нужно отрисовать экран заново
   }
 
-  switch (GetEncoderState())
-  {
+  switch (GetEncoderState()){
+
   case eNone:
     return;
-  case eButton:
-  { // Нажали кнопку
+  case eButton: // Нажали кнопку
     isEncoderButtonPressed = true;
     break;
-  }
+  
   case eLeft:
-  { // Энкодер вращается влево
+   // Энкодер вращается влево
     counter--;
     prtintTitle();
     printOption();
     isEncoderButtonPressed = false;
     break;
-  }
+  
   case eRight:
-  { // Энкодер вращается вправо
+   // Энкодер вращается вправо
     counter++;
     prtintTitle();
     printOption();
     isEncoderButtonPressed = false;
     break;
-  }
+  
   }
   delay(100);
 }
 
-void encoder()
-{
+void encoder(){
   switch (GetEncoderState())
   {
   case eNone:
     isEncoderButtonPressed = false;
     return;
-  case eButton:
-  { // Нажали кнопку
+
+  case eButton: // Нажали кнопку
     isEncoderButtonPressed = true;
     break;
-  }
+  
   case eLeft:
-  { // Энкодер вращается влево
+   // Энкодер вращается влево
     counter++;
     isEncoderButtonPressed = false;
     break;
-  }
+  
   case eRight:
-  { // Энкодер вращается вправо
+   // Энкодер вращается вправо
     counter--;
     isEncoderButtonPressed = false;
     break;
   }
-  }
 }
-void prtintTitle()
-{
-  if (counter > 4)
-  {
+void prtintTitle(){
+
+  if (counter > 4){
     counter = 0;
   }
 
-  if (counter < 0)
-  {
+  if (counter < 0){
     counter = 4;
   }
 
@@ -261,70 +253,77 @@ void prtintTitle()
   lcd.print("M ");
 }
 
-void printOption()
-{
+void printOption(){
+
   lcd.setCursor(0, 1);
 
-  if (counter > 4)
-  {
+  if (counter > 4){
     counter = 0;
   }
 
-  if (counter < 0)
-  {
+  if (counter < 0){
     counter = 4;
   }
 
-  lcd.print(counter + 1);
-  lcd.print(". ");
+  switch (counter){
 
-  switch (counter)
-  {
-  case 3: // СЕКУНДОМЕР
+  case 0: // ЛИНЕЙНОЕ
+    lcd.print("LINEAR");
+    break;
+
+  case 1: // СЕКУНДОМЕР
     lcd.print("CEKYH");
     lcd.print(char(3));
     lcd.print("OMEP");
     break;
 
-  case 4: // ТАЙМЕР
+  case 2: // ТАЙМЕР
     lcd.print("TA");
     lcd.print(char(0));
     lcd.print("MEP");
     break;
+
+  case 3: // ПЕРИОД
+    lcd.print("PERIOD");
+    break;
+
+  case 4: // УГЛОВОЕ
+    lcd.print("ANGULAR");
+      break;    
   }
 }
 
-void goToOption()
-{
-  switch (counter)
-  {
+void goToOption(){
+
+  switch (counter){
+
   case 0: // ЛИНЕЙНОЕ
     linearMovement();
     counter = 0; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
     exitFromOption();
     break;
 
-  case 1: // УГЛОВОЕ
+  case 4: // УГЛОВОЕ
     angleMovement();
-    counter = 1; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    counter = 4; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
     exitFromOption();
     break;
 
-  case 2: // ПЕРИОД
+  case 3: // ПЕРИОД
     oscillation();
-    counter = 2; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
-    exitFromOption();
-    break;
-
-  case 3: // СЕКУНДОМЕР
-    stopwatch();
     counter = 3; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
     exitFromOption();
     break;
 
-  case 4: // ТАЙМЕР
+  case 1: // СЕКУНДОМЕР
+    stopwatch();
+    counter = 1; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    exitFromOption();
+    break;
+
+  case 2: // ТАЙМЕР
     timer();
-    counter = 4; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+    counter = 2; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
     exitFromOption();
     break;
   }
@@ -338,8 +337,7 @@ void exitFromOption(){
 
 /***********************************  LINEINOE PEREME and his methods START ***********************************/
 
-void linearMovement()
-{ // Линейного перемещения
+void linearMovement(){ // Линейного перемещения
 
   const byte stepForLinearMovement = 5; //cm
   long timeForStartCounting = 0;
