@@ -101,6 +101,14 @@ uint8_t EncoderA, EncoderB, EncoderAPrev;
 int8_t counter = 0;
 bool ButtonPrev;
 
+int leftBallValues[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+int rightBallValues[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+long leftBallTimeValues[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+long rightBallTimeValues[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 eEncoderState GetEncoderState()
 {
   // Считываем состояние энкодера
@@ -345,7 +353,10 @@ void linearMovement(){ // Линейного перемещения
 
   int needDistance = 0;
 
-  bool isNeedPreView = true;
+  int optocouplerPin = 3;
+  int pinImpulse = 2;
+
+  isNeedPreView = true;
 
   counter = 0;
   int last = counter;
@@ -353,7 +364,6 @@ void linearMovement(){ // Линейного перемещения
   delay(50);
   do
   {
-    encoder();
     if (last != counter || isNeedPreView)
     { 
       counter = counter <= 0 ? 0 : counter;
@@ -364,136 +374,246 @@ void linearMovement(){ // Линейного перемещения
 
       printLinearMovementDistance(needDistance);
     }
-    delay(10);
 
-    if (isPinHigh(pin_Optocoupler) && needDistance > 0) {
-      timeForStartCounting = millis();
+    if (isAnalogButtonPressed(optocouplerPin) && needDistance > 0) {
+      timeForStartCounting = micros();
       while (needDistance > 0)
       {
-        if (isPinHigh(pin_Impulse_Counter)){
+        if (isAnalogButtonPressed(pinImpulse)){
           needDistance--;
+          
         }
+        distanceTravelTime = micros() - timeForStartCounting;// милилсекунды
+        printResultDistanceTravelTime(distanceTravelTime, needDistance);
+        delay(50);    
       }
-      distanceTravelTime = millis() - timeForStartCounting;// милилсекунды
-      printResultDistanceTravelTime(distanceTravelTime);
       isNeedPreView = true;
+      delay(2500);
     }
-
+    encoder();
   } while (!isEncoderButtonPressed);
 }
 
-void printResultDistanceTravelTime(long timeToPrint){
+void printResultDistanceTravelTime(long timeToPrint, int distanceToPrint){
   //FIXME вывод времения прохождения груза
+  lcd.setCursor(0, 0);
+  lcd.clear();
+
+  lcd.print("DISTANCE ");
+  
+  lcd.print(distanceToPrint);
+  lcd.print(" cm.");
+
+  lcd.setCursor(0, 1);
+
+  lcd.print("  ");
+
+  // example. timeToPrint = 5672000 millis
+  long second = timeToPrint / 1000000; // 5
+  long millisecond = timeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
+
+  // 5.67
+  lcd.print(second);
+  lcd.print(".");
+  lcd.print(millisecond);
+  
+  lcd.print(" cek.");
+  
 }
 
 void printLinearMovementDistance(int distanceToPrint){
-  //FIXME вывоз задаваемого расстояния в см
-}
-
-void printlinearMovement()
-{
-  if (counter < 0)
+  if (distanceToPrint < 0)
   {
-    counter = 0;
+    distanceToPrint = 0;
   }
 
   lcd.setCursor(0, 0);
   lcd.clear();
 
-  lcd.print("PACCTO");
-  lcd.print(char(5));
-  lcd.print("H");
-  lcd.print(char(4));
-  lcd.print("E");
-  lcd.print(" ");
-  lcd.print(counter);
-
+  lcd.print("  SET DISTANCE  ");
+  
   lcd.setCursor(0, 1);
-  lcd.print("BPEM");
-  lcd.print(char(5));
-  lcd.print(" ");
-  lcd.print(0);
-
-  lcd.print(" cek.");
+  lcd.print("    ");
+  lcd.print(distanceToPrint);
+  lcd.print(" cm");
 }
+
+/***********************************  LINEINOE PEREME and his methods END ***********************************/
+
+
+/***********************************  ANGLE MOVEMENT and his methods START ***********************************/
 
 void angleMovement()
 { // Углового перемещения
-  counter = 0;
-  int last = counter;
-  bool isNeedPrint = true;
-  delay(50);
-  do
-  {
-    encoder();
-    if (last != counter || isNeedPrint)
-    {
-      printAngleMovement();
 
-      last = counter;
-      isNeedPrint = false;
-    }
-    delay(10);
-  } while (!isEncoderButtonPressed);
   isNeedPreView = true;
   isEncoderButtonPressed = false;
+  do{
+    
+    if (isNeedPreView){
+      printAngleMovement();
+    }
+
+    encoderLeftAngle();
+    encoderRightAngle();
+
+    encoder();
+
+    printInfo(leftBallValues[0], rightBallValues[0]);
+
+    delay(100);
+
+  } while (!isEncoderButtonPressed);
+  isNeedPreView = true;
 }
 
-void printAngleMovement()
-{
-  if (counter < 0)
-  {
-    counter = 0;
+
+void encoderLeftAngle(){
+  int leftPlusPin = 3;
+  int leftMinusPin = 2;
+
+  int step = 1;
+
+  if(isAnalogButtonPressed(leftPlusPin)){
+    changeLeftBallArray(1 * step);
   }
 
+  if(isAnalogButtonPressed(leftMinusPin)){
+    changeLeftBallArray(-1 * step);
+  }
+}
+
+
+// Добавляет в массив новое значение
+void changeLeftBallArray(int newLeftValue){
+
+  leftBallValues[0] = leftBallValues[0] + newLeftValue;
+
+  if(leftBallValues[0] < 0){
+    leftBallValues[0] = 0;
+  }
+
+  leftBallValues[1] = leftBallValues[0];
+  leftBallValues[2] = leftBallValues[1];
+  leftBallValues[3] = leftBallValues[2];
+  leftBallValues[4] = leftBallValues[3];
+  leftBallValues[5] = leftBallValues[4];
+  leftBallValues[6] = leftBallValues[5];
+  leftBallValues[7] = leftBallValues[6];
+  leftBallValues[8] = leftBallValues[7];
+  leftBallValues[9] = leftBallValues[8];
+}
+
+void encoderRightAngle(){
+  int rightPlusPin = 1;
+  int rightMinusPin = 0;
+
+  int step = 1;
+
+  if(isAnalogButtonPressed(rightPlusPin)){
+    changeRightBallArray(1 * step);
+  }
+
+  if(isAnalogButtonPressed(rightMinusPin)){
+    changeRightBallArray(-1 * step);
+  }
+}
+
+// Добавляет в массив новое значение
+void changeRightBallArray(int newRightValue){
+
+  rightBallValues[0] = rightBallValues[0] + newRightValue;
+
+  if(rightBallValues[0] < 0){
+    rightBallValues[0] = 0;
+  }
+
+  rightBallValues[1] = rightBallValues[0];
+  rightBallValues[2] = rightBallValues[1];
+  rightBallValues[3] = rightBallValues[2];
+  rightBallValues[4] = rightBallValues[3];
+  rightBallValues[5] = rightBallValues[4];
+  rightBallValues[6] = rightBallValues[5];
+  rightBallValues[7] = rightBallValues[6];
+  rightBallValues[8] = rightBallValues[7];
+  rightBallValues[9] = rightBallValues[8];
+}
+
+void printAngleMovement(){
   lcd.setCursor(0, 0);
   lcd.clear();
-
-  lcd.print("Y");
-  lcd.print(char(1));
-  lcd.print("O");
-  lcd.print(char(2));
-  lcd.print(" ");
-  lcd.print(counter);
-
-  lcd.setCursor(0, 1);
-  lcd.print("BPEM");
-  lcd.print(char(5));
-  lcd.print(" ");
-  lcd.print(0);
-
-  lcd.print(" cek.");
+  lcd.print(" DEFLECT  BALLS ");
 }
 
-void oscillation()
-{ // Колебания
+void printInfo(long left, long right){
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print("LEFT ");
+  lcd.print(left);
+
+  lcd.setCursor(0, 1);
+  lcd.print("RIGHT ");
+  lcd.print(right);
+}
+
+
+/***********************************  ANGLE MOVEMENT and his methods END ***********************************/
+
+/***********************************  OSCILLATION and his methods START ***********************************/
+
+
+void oscillation(){ // Колебания
+  long timeForStartCounting = 0;
+  long countOfOscillations = 0;
+
+  int startPin = 3;
+  int pinImpulse = 2;
+
+  isNeedPreView = true;
+
   counter = 0;
   int last = counter;
-  bool isNeedPrint = true;
+
   delay(50);
   do
   {
-    encoder();
-    if (last != counter || isNeedPrint)
-    {
-      printOscillation();
-
+    if (last != counter || isNeedPreView)
+    { 
+      counter = counter <= 0 ? 0 : counter;
       last = counter;
-      isNeedPrint = false;
+
+      isNeedPreView = false;
+      printOscillation(0, counter);
     }
-    delay(10);
+
+    if (isAnalogButtonPressed(startPin) && counter > 0) {
+      timeForStartCounting = micros();
+      counter *= 2;
+      while (counter != 0)
+      {
+        if (isAnalogButtonPressed(pinImpulse)){
+          counter--;
+
+        }
+        
+        if(counter % 2 == 0){
+          printOscillation(micros() - timeForStartCounting, counter/2);
+        } else{
+          printOscillation(micros() - timeForStartCounting, (counter + 1)/2);
+        }
+        
+        delay(100);    
+      }
+      isNeedPreView = true;
+      delay(2500);
+    }
+    encoder();
   } while (!isEncoderButtonPressed);
-  isNeedPreView = true;
-  isEncoderButtonPressed = false;
 }
 
-void printOscillation()
-{
-  if (counter < 0)
-  {
-    counter = 0;
-  }
-
+void printOscillation(long time, int numberOfOscillation){
   lcd.setCursor(0, 0);
   lcd.clear();
 
@@ -505,16 +625,23 @@ void printOscillation()
   lcd.print(char(4));
   lcd.print(char(5));
   lcd.print(" ");
-  lcd.print(counter);
+  lcd.print(numberOfOscillation);
 
   lcd.setCursor(0, 1);
-  lcd.print("BPEM");
-  lcd.print(char(5));
-  lcd.print(" ");
-  lcd.print(0);
+  // example. timeToPrint = 5672000 millis
+  long second = time / 1000000; // 5
+  long millisecond = time - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
 
+  // 5.67
+  lcd.print(second);
+  lcd.print(".");
+  lcd.print(millisecond);
+  
   lcd.print(" cek.");
 }
+
+/***********************************  OSCILLATION and his methods END ***********************************/
 
 /***********************************  STOP WATCH and his methods START ***********************************/
 
