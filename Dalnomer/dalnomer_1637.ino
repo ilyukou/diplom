@@ -1,28 +1,10 @@
-int ya_letter[8] = { // Я
-  B01111,
-  B10001,
-  B10001,
-  B01111,
-  B00101,
-  B01001,
-  B10001,
-  B00000
-};
-
-int i_letter[8] = { // И
-    B10001,
-    B10011,
-    B10011,
-    B10101,
-    B10101,
-    B11001,
-    B10001,
-    B00000
-};
-
-
-#include <LiquidCrystal_PCF8574.h>
-LiquidCrystal_PCF8574 lcd(0x27);// адрес экрана 0x27
+// Include the library:
+#include <TM1637Display.h>
+// Define the connections pins:
+#define CLK 7
+#define DIO 6
+// Create display object of type TM1637Display:
+TM1637Display display = TM1637Display(CLK, DIO);
 
 #define trigPin 4
 #define echoPin 3
@@ -33,26 +15,18 @@ NewPing sonar(trigPin, echoPin, 400);
 float dist_5[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // массив для хранения трёх последних измерений
 float middle, dist, dist_filtered, dist_filtered_old;
 float k;
-byte i, delta;
+byte i, delta, evan;
 unsigned long dispIsrTimer, sensTimer;
 
 void setup() {
   Serial.begin (9600);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  lcd.begin(16, 2);// у нас экран 16 столбцов на 2 строки
-  lcd.setBacklight(255); //установить яркость подсветки на максимум
-  lcd.createChar(0, ya_letter);
-  lcd.createChar(1, i_letter);
-  lcd.clear(); // очистить экран и установить курсор в позицию 0, 0
-  lcd.setCursor(0, 0);
-  lcd.print("PACCTO");
-  lcd.print(char(0)); //Я
-  lcd.print("H");
-  lcd.print(char(1)); //И
-  lcd.print("E:");
-  lcd.setCursor(14, 1);
-  lcd.print("cm");
+
+  display.clear();
+  display.setBrightness(7);
+
+  evan = 1;
 }
 void loop() {
   // put your main code here, to run repeatedly:
@@ -87,13 +61,22 @@ void loop() {
      
       long value = dist_filtered * 100;// вывести
 
+      if (evan == 1){
+        display.clear();
+        display.showNumberDecEx(value, 0b11100000, false, 4, 0);
+        evan = 0 ;
+      } else {
+        display.clear();
+        display.showNumberDec(value, false, 4, 0);
+        evan = 1 ;
+      }
+      
+      delay(500);
+
       Serial.println();
       Serial.println(dist_filtered);
       Serial.println();
 
-      lcd.setCursor(8, 1);
-      lcd.print(dist_filtered);
-      delay(200);
     }
     
     sensTimer = millis();                                   // сбросить таймер
@@ -106,7 +89,7 @@ float middleArray(){
     float result = 0.0;
  
     qsort(dist_5, lt_length, sizeof(dist_5[0]), sort_desc);
-    //print_array();
+    print_array();
     
     return dist_5[2];
 }
