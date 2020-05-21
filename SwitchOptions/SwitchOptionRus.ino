@@ -356,10 +356,16 @@ void angleMovement()
 
   isNeedPreView = true;
   isEncoderButtonPressed = false;
+
+  int lastLeftBallValues = leftBallValues[0];
+  int lastRightBallValues = rightBallValues[0];
+
+
   do{
     
     if (isNeedPreView){
       printAngleMovement();
+      isNeedPreView = false;
     }
 
     encoderLeftAngle();
@@ -367,7 +373,12 @@ void angleMovement()
 
     encoder();
 
-    printInfo(leftBallValues[0], rightBallValues[0]);
+        if(lastLeftBallValues != leftBallValues[0] || lastRightBallValues != rightBallValues[0]){
+            printInfo(leftBallValues[0], rightBallValues[0]);
+            lastLeftBallValues = leftBallValues[0];
+            lastRightBallValues = rightBallValues[0];
+        }
+    
 
     delay(100);
 
@@ -601,7 +612,7 @@ void printTimeForStopWatch(long timeToPrint)
   lcd.setCursor(0, 0);
   lcd.clear();
   
-  lcd.print(L"ВРЕМя ");
+  lcd.print(L"ВРЕМЯ ");
 
   // example. timeToPrint = 5672000 millis
   long second = timeToPrint / 1000000; // 5
@@ -630,7 +641,7 @@ void printPreViewForStopWatch()
 void printResultTimeForStopWatch(long timeToPrint){
   lcd.setCursor(0, 0);
   lcd.clear();
-  lcd.print(L" РЕЗУЛЬТАТ ");
+  lcd.print(L"   РЕЗУЛЬТАТ:   ");
 
   // example. timeToPrint = 5672000 millis
   long second = timeToPrint / 1000000; // 5
@@ -638,11 +649,11 @@ void printResultTimeForStopWatch(long timeToPrint){
   millisecond = millisecond / 100; // 6720
 
   // 5.67
+  lcd.setCursor(0, 1);
   lcd.print(String(second));
   lcd.print(".");
   lcd.print(String(millisecond));
-  lcd.setCursor(0, 1);
-  lcd.print(L"     секунд     ");
+  lcd.print(L" сек.");
 }
 
 /***********************************  STOP WATCH and his methods END ***********************************/
@@ -736,7 +747,7 @@ void printRemaimingTimeForTimer(double timerTimeToPrint){
 void printWhenTimeEndsForTimer(){
   lcd.setCursor(0, 0);
   lcd.clear();
-  lcd.print(L"     КОНЕЦ!     ");
+  lcd.print(L"     ФИНИШ!     ");
 }
 
 /***********************************  TIMER and his methods END ***********************************/
