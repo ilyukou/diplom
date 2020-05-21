@@ -307,7 +307,7 @@ void printResultDistanceTravelTime(long timeToPrint, int distanceToPrint){
   
 lcd.print(L"ДИСТАНЦИЯ ");
   
-  lcd.print(distanceToPrint);
+  lcd.print(String(distanceToPrint));
   
 lcd.print(L" см");
 
@@ -321,9 +321,9 @@ lcd.print(L" см");
   millisecond = millisecond / 100; // 6720
 
   // 5.67
-  lcd.print(second);
+  lcd.print(String(second));
   lcd.print(".");
-  lcd.print(millisecond);
+  lcd.print(String(millisecond));
   
   lcd.print(L" сек");
   
@@ -341,12 +341,9 @@ void printLinearMovementDistance(int distanceToPrint){
   lcd.print(L"РАССТОЯНИЕ");
   
   lcd.setCursor(0, 1);
-  lcd.print(L"  ");
-  String thisString = String(distanceToPrint);
-  Serial.println(distanceToPrint);
-  lcd.print(thisString);
-  lcd.setCursor(7, 1);
-  lcd.print(L" СМ");
+  lcd.print("    ");
+  lcd.print(String(distanceToPrint));
+  lcd.print(L" см");
 }
 
 /***********************************  LINEINOE PEREME and his methods END ***********************************/
@@ -461,11 +458,11 @@ void printInfo(long left, long right){
 
   lcd.setCursor(0, 0);
   lcd.print(L"ЛЕВЫЙ УГОЛ ");
-  lcd.print(left);
+  lcd.print(String(left));
 
   lcd.setCursor(0, 1);
   lcd.print(L"ПРАВЫЙ УГОЛ ");
-  lcd.print(right);
+  lcd.print(String(right));
 }
 
 
@@ -530,7 +527,7 @@ void printOscillation(long time, int numberOfOscillation){
   
   lcd.print(L"КОЛЕБАНИЯ ");
   lcd.print(" ");
-  lcd.print(numberOfOscillation);
+  lcd.print(String(numberOfOscillation));
 
   lcd.setCursor(0, 1);
   // example. timeToPrint = 5672000 millis
@@ -539,9 +536,9 @@ void printOscillation(long time, int numberOfOscillation){
   millisecond = millisecond / 100; // 6720
 
   // 5.67
-  lcd.print(second);
+  lcd.print(String(second));
   lcd.print(".");
-  lcd.print(millisecond);
+  lcd.print(String(millisecond));
   
   
   lcd.print(L" сек.");
@@ -604,7 +601,7 @@ void printTimeForStopWatch(long timeToPrint)
   lcd.setCursor(0, 0);
   lcd.clear();
   
-  lcd.print(L"ВРЕМЯ ");
+  lcd.print(L"ВРЕМя ");
 
   // example. timeToPrint = 5672000 millis
   long second = timeToPrint / 1000000; // 5
@@ -612,9 +609,9 @@ void printTimeForStopWatch(long timeToPrint)
   millisecond = millisecond / 100; // 6720
 
   // 5.67
-  lcd.print(second);
+  lcd.print(String(second));
   lcd.print(".");
-  lcd.print(millisecond);
+  lcd.print(String(millisecond));
   lcd.setCursor(0, 1);
   
   lcd.print(L"     секунд     ");
@@ -641,9 +638,9 @@ void printResultTimeForStopWatch(long timeToPrint){
   millisecond = millisecond / 100; // 6720
 
   // 5.67
-  lcd.print(second);
+  lcd.print(String(second));
   lcd.print(".");
-  lcd.print(millisecond);
+  lcd.print(String(millisecond));
   lcd.setCursor(0, 1);
   lcd.print(L"     секунд     ");
 }
@@ -714,7 +711,7 @@ void printPreViewForTimer(double setTimeToPrint)
   lcd.print(L"УСТАНОВИТЕ ВРЕМЯ");
   
   lcd.setCursor(0, 1);
-  lcd.print(setTimeToPrint);
+  lcd.print(String(setTimeToPrint));
   lcd.print(L" сек.");
 }
 
@@ -729,9 +726,9 @@ void printRemaimingTimeForTimer(double timerTimeToPrint){
   millisecond = millisecond / 100; // 6720
 
   // 5.67
-  lcd.print(second);
+  lcd.print(String(second));
   lcd.print(".");
-  lcd.print(millisecond);
+  lcd.print(String(millisecond));
   lcd.setCursor(0, 1);
   lcd.print(L" сек.");
 }
