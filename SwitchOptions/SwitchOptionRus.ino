@@ -10,6 +10,8 @@ LCD_1602_RUS lcd(0x27, 16, 2);
 const int pin_Optocoupler = 5; //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
 const int pin_Impulse_Counter = 6; //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
 
+const int pin_Sound_Signal = 9;
+
 unsigned long CurrentTime, LastTime;
 enum eEncoderState
 {
@@ -75,6 +77,9 @@ void setup()
   pinMode(pin_DT, INPUT);
   pinMode(pin_CLK, INPUT);
   pinMode(pin_Btn, INPUT_PULLUP); // Кнопка не подтянута к +5 поэтому задействуем внутренний pull-up резистор
+
+  pinMode(pin_Sound_Signal, OUTPUT); //объявляем пин как выход
+
   Serial.begin(9600);
   counter = 0;
 
@@ -663,6 +668,8 @@ void printResultTimeForStopWatch(long timeToPrint){
 
 void timer()
 { // Таймер
+  const int numberSound = 2;//количество сигналов
+  const int delayBetweenSound = 500;
 
   byte analogPinForStartButtonOfTimer = 3; //номер порта для старта
   double stepForTimer = 0.5;               //секунды
@@ -701,7 +708,9 @@ void timer()
         currentTime = needTimeForTimer - micros();
         printRemaimingTimeForTimer(currentTime);
       }
+     
       printWhenTimeEndsForTimer();
+      soundSignal(numberSound, delayBetweenSound);
       delay(1000); // показывать уведомление об окончании времени 1с
 
       // возвращение значений в исходное положение
@@ -763,6 +772,17 @@ bool isAnalogButtonPressed(byte analogPinNumber)
 
 bool isPinHigh(byte pinNumber){
   return digitalRead(pinNumber) == HIGH;
+}
+
+void soundSignal(int numbersOfSound ,int timeBetweenSonds){
+  const int valueOfSignal = 100;
+
+  for (int j = 0; j < numbersOfSound; j++){
+    analogWrite(pin_Sound_Signal, 100); //включаем звук
+    delay(timeBetweenSonds);
+    analogWrite(pin_Sound_Signal, 0); //выключаем звук
+    delay(timeBetweenSonds);
+  }
 }
 
 /***********************************  COMMON methods END ***********************************/
