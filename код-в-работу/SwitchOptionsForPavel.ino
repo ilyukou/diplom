@@ -1,16 +1,5 @@
-#include <LCD_1602_RUS.h>
 
-LCD_1602_RUS lcd(0x27, 16, 2);
-
-// Энкодер
-#define pin_CLK 12
-#define pin_DT 11
-#define pin_Btn 13
-
-//const int pin_Optocoupler = 5; //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
-//const int pin_Impulse_Counter = 6; //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
-
-const int pin_Sound_Signal = 3;
+const int pin_Sound_Signal = 5;
 
 unsigned long CurrentTime, LastTime;
 enum eEncoderState
@@ -67,42 +56,30 @@ eEncoderState GetEncoderState()
   return Result;
 }
 
-void setup()
-{
-  Wire.begin();
+void setup() {
   /*настройка блока индикации */
   lcd.init();
-  lcd.backlight(); // Включаем подсветку дисплея
-
+  lcd.backlight();
   /*настройка энкодера*/
   pinMode(pin_DT, INPUT);
   pinMode(pin_CLK, INPUT);
   /*настройка кнопки энкодера*/
-  pinMode(pin_Btn, INPUT_PULLUP); // Кнопка не подтянута к +5 поэтому задействуем внутренний pull-up резистор
-
+  pinMode(pin_Btn, INPUT_PULLUP); 
   /*настройка звукового излучателя */
   pinMode(pin_Sound_Signal, OUTPUT); 
-
-  Serial.begin(9600);
-  counter = 0;
-
-  // настройка датчиков линейного перемещения
-  //pinMode(pin_Optocoupler, INPUT);
-  //pinMode(pin_Impulse_Counter, INPUT);
-  
+  /*настройка датчиков линейного перемещения*/
+  pinMode(pin_Optocoupler, INPUT);
+  pinMode(pin_Impulse_Counter, INPUT);
 }
 
 bool isNeedPreView = true;
 bool isEncoderButtonPressed = false;
 
 void loop(){
+  choiseOfMode();
+}
 
-  if (isNeedPreView){
-    prtintTitle();
-    printOption();
-    isNeedPreView = false;
-  }
-
+void choiseOfMode(){
   if (isEncoderButtonPressed){
     goToOption();
     isNeedPreView = true; // указывает что после работы с опцией нужно отрисовать экран заново
@@ -112,7 +89,8 @@ void loop(){
 
   case eNone:
     return;
-  case eButton: // Нажали кнопку
+
+  case eButton:
     isEncoderButtonPressed = true;
     break;
   
@@ -130,10 +108,8 @@ void loop(){
     prtintTitle();
     printOption();
     isEncoderButtonPressed = false;
-    break;
-  
+    break; 
   }
-  delay(100);
 }
 
 void encoder(){
@@ -160,6 +136,7 @@ void encoder(){
     break;
   }
 }
+
 void prtintTitle(){
 
   if (counter > 4){
@@ -274,7 +251,6 @@ void linearMovement(){ // Линейного перемещения
   counter = 0;
   int last = counter;
 
-  delay(50);
   do
   {
     if (last != counter || isNeedPreView)
@@ -572,8 +548,8 @@ void printOscillation(long time, int numberOfOscillation){
 void stopwatch()
 { // Секундомер
 
-  const byte analogPinForStartButtonOfStopWatch = 0; //номер порта для старта
-  const byte analogPinForStopButtonOfStopWatch = 1;  //номер порта для стопа
+  const byte analogPinForStartButtonOfStopWatch = 3; //номер порта для старта
+  const byte analogPinForStopButtonOfStopWatch = 2;  //номер порта для стопа
 
   long timeOfStopWatch = 0;
   long currentTime = 0;
@@ -674,7 +650,7 @@ void timer()
   const int numberSound = 2;//количество сигналов
   const int delayBetweenSound = 500;
 
-  byte analogPinForStartButtonOfTimer = 0; //номер порта для старта
+  byte analogPinForStartButtonOfTimer = 3; //номер порта для старта
   double stepForTimer = 0.5;               //секунды
   double setTimeForTimer = 0;
   double currentTime = 0;
@@ -759,7 +735,7 @@ void printRemaimingTimeForTimer(double timerTimeToPrint){
 void printWhenTimeEndsForTimer(){
   lcd.setCursor(0, 0);
   lcd.clear();
-  lcd.print(L"      СТОП!    ");
+  lcd.print(L"     ФИНИШ!     ");
 }
 
 /***********************************  TIMER and his methods END ***********************************/
