@@ -3,9 +3,9 @@
 LCD_1602_RUS lcd(0x27, 16, 2);
 
 // Энкодер
-#define pin_CLK 12
-#define pin_DT 11
-#define pin_Btn 13
+#define pin_CLK 4
+#define pin_DT 2
+#define pin_Btn 9
 
 //const int pin_Optocoupler = 5; //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
 //const int pin_Impulse_Counter = 6; //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
