@@ -12,6 +12,8 @@ const int pin_Impulse_Counter = 6; //пин для подсчета испуль
 
 const int pin_Sound_Signal = 3;
 
+const int pin_relay = 10;
+
 unsigned long CurrentTime, LastTime;
 enum eEncoderState
 {
@@ -82,6 +84,9 @@ void setup()
 
   /*настройка звукового излучателя */
   pinMode(pin_Sound_Signal, OUTPUT); 
+
+  // настройка реле
+  pinMode(pin_relay, OUTPUT);
 
   Serial.begin(9600);
   counter = 0;
@@ -291,13 +296,20 @@ void linearMovement(){ // Линейного перемещения
       printLinearMovementDistance(needDistance);
     }
 
+
+    if(isAnalogButtonPressed(pinDistanceControlStop)){
+      setRealyStatus(true);
+    }
+
     if (isAnalogButtonPressed(pinDistanceControlStart) && needDistance > 0)
     {
+        setRealyStatus(false);
         while (true)
         {
             if (isPinHigh(pin_Optocoupler))
             {
                 distanceTravelTime = startLinearDistanceCalculation(needDistance);
+                setRealyStatus(false);
                 printResultDistanceTravelTime(distanceTravelTime, needDistance);
                 delay(2000);
                 break;
@@ -381,7 +393,7 @@ long startLinearDistanceCalculation(int needLinerDistance){
     if (isPinHigh(pin_Impulse_Counter)) {
         needLinerDistance-- ; 
         distanceTravelTime = micros() - timeForStartCounting;// милилсекунды
-        printResultDistanceTravelTime(distanceTravelTime, needDistance);
+        printResultDistanceTravelTime(distanceTravelTime, needLinerDistance);
     }
   }
 
@@ -818,6 +830,14 @@ void soundSignal(int numbersOfSound ,int timeBetweenSonds){
     delay(timeBetweenSonds);
     analogWrite(pin_Sound_Signal, 0); //выключаем звук
     delay(timeBetweenSonds);
+  }
+}
+
+void setRealyStatus(bool status){
+  if(status){
+    digitalWrite(pin_relay, HIGH);
+  } else {
+    digitalWrite(pin_relay, LOW);
   }
 }
 
