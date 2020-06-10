@@ -7,8 +7,8 @@ LCD_1602_RUS lcd(0x27, 16, 2);
 #define pin_DT 2
 #define pin_Btn 9
 
-const int pin_Optocoupler = 5; //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
-const int pin_Impulse_Counter = 6; //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
+const int pin_Optocoupler = 5;     //пин для оптопары начинающей отсчет, при нажатии происходит старт подсчета импульсов
+const int pin_Impulse_Counter = 8; //пин для подсчета испульсов, при нажатии происходит подсчет импульсов
 
 const int pin_Sound_Signal = 3;
 
@@ -83,7 +83,7 @@ void setup()
   pinMode(pin_Btn, INPUT_PULLUP); // Кнопка не подтянута к +5 поэтому задействуем внутренний pull-up резистор
 
   /*настройка звукового излучателя */
-  pinMode(pin_Sound_Signal, OUTPUT); 
+  pinMode(pin_Sound_Signal, OUTPUT);
 
   // настройка реле
   pinMode(pin_relay, OUTPUT);
@@ -94,54 +94,57 @@ void setup()
   // настройка датчиков линейного перемещения
   pinMode(pin_Optocoupler, INPUT);
   pinMode(pin_Impulse_Counter, INPUT);
-  
 }
 
 bool isNeedPreView = true;
 bool isEncoderButtonPressed = false;
 
-void loop(){
+void loop()
+{
 
-  if (isNeedPreView){
+  if (isNeedPreView)
+  {
     prtintTitle();
     printOption();
     isNeedPreView = false;
   }
 
-  if (isEncoderButtonPressed){
+  if (isEncoderButtonPressed)
+  {
     goToOption();
     isNeedPreView = true; // указывает что после работы с опцией нужно отрисовать экран заново
   }
 
-  switch (GetEncoderState()){
+  switch (GetEncoderState())
+  {
 
   case eNone:
     return;
   case eButton: // Нажали кнопку
     isEncoderButtonPressed = true;
     break;
-  
+
   case eLeft:
-   // Энкодер вращается влево
+    // Энкодер вращается влево
     counter--;
     prtintTitle();
     printOption();
     isEncoderButtonPressed = false;
     break;
-  
+
   case eRight:
-   // Энкодер вращается вправо
+    // Энкодер вращается вправо
     counter++;
     prtintTitle();
     printOption();
     isEncoderButtonPressed = false;
     break;
-  
   }
   delay(100);
 }
 
-void encoder(){
+void encoder()
+{
   switch (GetEncoderState())
   {
   case eNone:
@@ -151,27 +154,30 @@ void encoder(){
   case eButton: // Нажали кнопку
     isEncoderButtonPressed = true;
     break;
-  
+
   case eLeft:
-   // Энкодер вращается влево
+    // Энкодер вращается влево
     counter++;
     isEncoderButtonPressed = false;
     break;
-  
+
   case eRight:
-   // Энкодер вращается вправо
+    // Энкодер вращается вправо
     counter--;
     isEncoderButtonPressed = false;
     break;
   }
 }
-void prtintTitle(){
+void prtintTitle()
+{
 
-  if (counter > 4){
+  if (counter > 4)
+  {
     counter = 0;
   }
 
-  if (counter < 0){
+  if (counter < 0)
+  {
     counter = 4;
   }
 
@@ -183,19 +189,23 @@ void prtintTitle(){
   lcd.print(L"PEЖИМ");
 }
 
-void printOption(){
+void printOption()
+{
 
   lcd.setCursor(0, 1);
 
-  if (counter > 4){
+  if (counter > 4)
+  {
     counter = 0;
   }
 
-  if (counter < 0){
+  if (counter < 0)
+  {
     counter = 4;
   }
 
-  switch (counter){
+  switch (counter)
+  {
 
   case 0: // ЛИНЕЙНОЕ
     lcd.print(L"1. ЛИНЕЙНОЕ");
@@ -215,13 +225,15 @@ void printOption(){
 
   case 4: // УГЛОВОЕ
     lcd.print(L"2. УГЛОВОЕ");
-      break;    
+    break;
   }
 }
 
-void goToOption(){
+void goToOption()
+{
 
-  switch (counter){
+  switch (counter)
+  {
 
   case 0: // ЛИНЕЙНОЕ
     linearMovement();
@@ -255,7 +267,8 @@ void goToOption(){
   }
 }
 
-void exitFromOption(){
+void exitFromOption()
+{
   // две строчки снизу помогают выйти из режима
   encoder();
   delay(500);
@@ -263,19 +276,20 @@ void exitFromOption(){
 
 /***********************************  LINEINOE PEREME and his methods START ***********************************/
 
-void linearMovement(){ // Линейного перемещения
+void linearMovement()
+{ // Линейного перемещения
+
+  bool isMagnetDown = false;
+  bool isOptocoupler = false;
 
   const byte stepForLinearMovement = 5; //cm
+  int needDistance = 0;
+
   long timeForStartCounting = 0;
   long distanceTravelTime = 0;
 
-  int needDistance = 0;
-
-  int pinDistanceControlStart = 2 ;
-  int pinDistanceControlStop = 3 ;
-
-  int optocouplerPin = 3;
-  int pinImpulse = 2;
+  int pinDistanceControlStart = 2;
+  int pinDistanceControlStop = 3;
 
   isNeedPreView = true;
 
@@ -284,7 +298,21 @@ void linearMovement(){ // Линейного перемещения
 
   delay(50);
   do
-  { 
+  {
+    if (isAnalogButtonPressed(pinDistanceControlStart))
+    {
+      setRealyStatus(false);
+      isMagnetDown = true;
+    }
+
+    if (isAnalogButtonPressed(pinDistanceControlStop))
+    {
+      setRealyStatus(true);
+      isMagnetDown = false;
+    }
+
+    // Задача расстояния
+    
     if (last != counter || isNeedPreView)
     { 
       counter = counter <= 0 ? 0 : counter;
@@ -294,56 +322,69 @@ void linearMovement(){ // Линейного перемещения
       isNeedPreView = false;
 
       printLinearMovementDistance(needDistance);
+      Serial.println(needDistance);
     }
 
-
-    if(isAnalogButtonPressed(pinDistanceControlStop)){
-      setRealyStatus(true);
+    if (isPinHigh(pin_Optocoupler)) {
+      isOptocoupler = true;
     }
 
-    if (isAnalogButtonPressed(pinDistanceControlStart) && needDistance > 0)
+    if (isOptocoupler && needDistance <= 0 && isMagnetDown)
     {
-        setRealyStatus(false);
-        while (true)
-        {
-            if (isPinHigh(pin_Optocoupler))
-            {
-                distanceTravelTime = startLinearDistanceCalculation(needDistance);
-                setRealyStatus(false);
-                printResultDistanceTravelTime(distanceTravelTime, needDistance);
-                delay(2000);
-                break;
-            }
-        }
+      falseTriggeringOptocouplersStart();
+      isMagnetDown = false;
+      delay(2000);
+      isNeedPreView = true;
+      isOptocoupler = false;
+      Serial.println("first");
     }
 
-    // if (isAnalogButtonPressed(optocouplerPin) && needDistance > 0) {
-    //   timeForStartCounting = micros();
-    //   while (needDistance > 0)
-    //   {
-    //     if (isAnalogButtonPressed(pinImpulse)){
-    //       needDistance--;
-    //     }
-    //     distanceTravelTime = micros() - timeForStartCounting;// милилсекунды
-    //     printResultDistanceTravelTime(distanceTravelTime, needDistance);
-    //     delay(50);    
-    //   }
-    //   isNeedPreView = true;
-    //   delay(2500);
-    // }
+    if (isOptocoupler && needDistance > 0 && !isMagnetDown)
+    {
+      Serial.println("second");
+      falseTriggeringOptocouplersStart();
+      delay(2000);
+      isMagnetDown = false;
+      isNeedPreView = true;
+      isOptocoupler = false;
+    }
+
+    if (isOptocoupler && needDistance > 0 && isMagnetDown)
+    {
+      Serial.println("last");
+      distanceTravelTime = startLinearDistanceCalculation(needDistance);
+      setRealyStatus(true);
+      printResultDistanceTravelTime(distanceTravelTime, needDistance);
+      isNeedPreView = true;
+      isOptocoupler = false;
+      delay(2500);
+    }
+
     encoder();
   } while (!isEncoderButtonPressed);
 }
 
-void printResultDistanceTravelTime(long timeToPrint, int distanceToPrint){
+void falseTriggeringOptocouplersStart(){
+  setRealyStatus(true);
+
+  lcd.setCursor(0, 0);
+  lcd.clear();
+
+  lcd.print(L"     ЛОЖНОЕ     ");
+  lcd.setCursor(0, 1);
+  lcd.print(L"  СРАБАТЫВАНИЕ  ");
+}
+
+void printResultDistanceTravelTime(long timeToPrint, int distanceToPrint)
+{
   //FIXME вывод времения прохождения груза
   lcd.setCursor(0, 0);
   lcd.clear();
 
   lcd.print(L"ДИСТАНЦИЯ ");
-  
+
   lcd.print(String(distanceToPrint));
-  
+
   lcd.print(L" см");
 
   lcd.setCursor(0, 1);
@@ -351,20 +392,20 @@ void printResultDistanceTravelTime(long timeToPrint, int distanceToPrint){
   lcd.print("  ");
 
   // example. timeToPrint = 5672000 millis
-  long second = timeToPrint / 1000000; // 5
+  long second = timeToPrint / 1000000;               // 5
   long millisecond = timeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
+  millisecond = millisecond / 100;                   // 6720
 
   // 5.67
   lcd.print(String(second));
   lcd.print(".");
   lcd.print(String(millisecond));
-  
+
   lcd.print(L" сек");
-  
 }
 
-void printLinearMovementDistance(int distanceToPrint){
+void printLinearMovementDistance(int distanceToPrint)
+{
   if (distanceToPrint < 0)
   {
     distanceToPrint = 0;
@@ -374,26 +415,29 @@ void printLinearMovementDistance(int distanceToPrint){
   lcd.clear();
 
   lcd.print(L"РАССТОЯНИЕ");
-  
+
   lcd.setCursor(0, 1);
   lcd.print("    ");
   lcd.print(String(distanceToPrint));
   lcd.print(L" см");
 }
 
-long startLinearDistanceCalculation(int needLinerDistance){
-  
+long startLinearDistanceCalculation(int needLinerDistance)
+{
+
   long timeForStartCounting = 0;
   long distanceTravelTime = 0;
-  
+
+  timeForStartCounting = micros();
+
   while (needLinerDistance > 0)
   {
-    timeForStartCounting = micros();    
-            
-    if (isPinHigh(pin_Impulse_Counter)) {
-        needLinerDistance-- ; 
-        distanceTravelTime = micros() - timeForStartCounting;// милилсекунды
-        printResultDistanceTravelTime(distanceTravelTime, needLinerDistance);
+    if (isPinHigh(pin_Impulse_Counter))
+    { 
+      Serial.println("Оптопара");
+      needLinerDistance--;
+      distanceTravelTime = micros() - timeForStartCounting; // милилсекунды
+      printResultDistanceTravelTime(distanceTravelTime, needLinerDistance);
     }
   }
 
@@ -401,7 +445,6 @@ long startLinearDistanceCalculation(int needLinerDistance){
 }
 
 /***********************************  LINEINOE PEREME and his methods END ***********************************/
-
 
 /***********************************  ANGLE MOVEMENT and his methods START ***********************************/
 
@@ -414,10 +457,11 @@ void angleMovement()
   int lastLeftBallValues = leftBallValues[0];
   int lastRightBallValues = rightBallValues[0];
 
+  do
+  {
 
-  do{
-    
-    if (isNeedPreView){
+    if (isNeedPreView)
+    {
       printAngleMovement();
       isNeedPreView = false;
     }
@@ -427,12 +471,12 @@ void angleMovement()
 
     encoder();
 
-        if(lastLeftBallValues != leftBallValues[0] || lastRightBallValues != rightBallValues[0]){
-            printInfo(leftBallValues[0], rightBallValues[0]);
-            lastLeftBallValues = leftBallValues[0];
-            lastRightBallValues = rightBallValues[0];
-        }
-    
+    if (lastLeftBallValues != leftBallValues[0] || lastRightBallValues != rightBallValues[0])
+    {
+      printInfo(leftBallValues[0], rightBallValues[0]);
+      lastLeftBallValues = leftBallValues[0];
+      lastRightBallValues = rightBallValues[0];
+    }
 
     delay(100);
 
@@ -440,29 +484,32 @@ void angleMovement()
   isNeedPreView = true;
 }
 
-
-void encoderLeftAngle(){
+void encoderLeftAngle()
+{
   int leftPlusPin = 3;
   int leftMinusPin = 2;
 
   int step = 1;
 
-  if(isAnalogButtonPressed(leftPlusPin)){
+  if (isAnalogButtonPressed(leftPlusPin))
+  {
     changeLeftBallArray(1 * step);
   }
 
-  if(isAnalogButtonPressed(leftMinusPin)){
+  if (isAnalogButtonPressed(leftMinusPin))
+  {
     changeLeftBallArray(-1 * step);
   }
 }
 
-
 // Добавляет в массив новое значение
-void changeLeftBallArray(int newLeftValue){
+void changeLeftBallArray(int newLeftValue)
+{
 
   leftBallValues[0] = leftBallValues[0] + newLeftValue;
 
-  if(leftBallValues[0] < 0){
+  if (leftBallValues[0] < 0)
+  {
     leftBallValues[0] = 0;
   }
 
@@ -477,27 +524,32 @@ void changeLeftBallArray(int newLeftValue){
   leftBallValues[9] = leftBallValues[8];
 }
 
-void encoderRightAngle(){
+void encoderRightAngle()
+{
   int rightPlusPin = 1;
   int rightMinusPin = 0;
 
   int step = 1;
 
-  if(isAnalogButtonPressed(rightPlusPin)){
+  if (isAnalogButtonPressed(rightPlusPin))
+  {
     changeRightBallArray(1 * step);
   }
 
-  if(isAnalogButtonPressed(rightMinusPin)){
+  if (isAnalogButtonPressed(rightMinusPin))
+  {
     changeRightBallArray(-1 * step);
   }
 }
 
 // Добавляет в массив новое значение
-void changeRightBallArray(int newRightValue){
+void changeRightBallArray(int newRightValue)
+{
 
   rightBallValues[0] = rightBallValues[0] + newRightValue;
 
-  if(rightBallValues[0] < 0){
+  if (rightBallValues[0] < 0)
+  {
     rightBallValues[0] = 0;
   }
 
@@ -512,13 +564,15 @@ void changeRightBallArray(int newRightValue){
   rightBallValues[9] = rightBallValues[8];
 }
 
-void printAngleMovement(){
+void printAngleMovement()
+{
   lcd.setCursor(0, 0);
   lcd.clear();
   lcd.print(L"ОТКЛОНИТЕ  ШАРЫ");
 }
 
-void printInfo(long left, long right){
+void printInfo(long left, long right)
+{
   lcd.clear();
 
   lcd.setCursor(0, 0);
@@ -530,13 +584,12 @@ void printInfo(long left, long right){
   lcd.print(String(right));
 }
 
-
 /***********************************  ANGLE MOVEMENT and his methods END ***********************************/
 
 /***********************************  OSCILLATION and his methods START ***********************************/
 
-
-void oscillation(){ // Колебания
+void oscillation()
+{ // Колебания
   long timeForStartCounting = 0;
   long countOfOscillations = 0;
 
@@ -552,7 +605,7 @@ void oscillation(){ // Колебания
   do
   {
     if (last != counter || isNeedPreView)
-    { 
+    {
       counter = counter <= 0 ? 0 : counter;
       last = counter;
 
@@ -560,22 +613,27 @@ void oscillation(){ // Колебания
       printOscillation(0, counter);
     }
 
-    if (isAnalogButtonPressed(startPin) && counter > 0) {
+    if (isAnalogButtonPressed(startPin) && counter > 0)
+    {
       timeForStartCounting = micros();
       counter *= 2;
       while (counter != 0)
       {
-        if (isAnalogButtonPressed(pinImpulse)){
+        if (isAnalogButtonPressed(pinImpulse))
+        {
           counter--;
         }
-        
-        if(counter % 2 == 0){
-          printOscillation(micros() - timeForStartCounting, counter/2);
-        } else{
-          printOscillation(micros() - timeForStartCounting, (counter + 1)/2);
+
+        if (counter % 2 == 0)
+        {
+          printOscillation(micros() - timeForStartCounting, counter / 2);
         }
-        
-        delay(100);    
+        else
+        {
+          printOscillation(micros() - timeForStartCounting, (counter + 1) / 2);
+        }
+
+        delay(100);
       }
       isNeedPreView = true;
       delay(2500);
@@ -584,27 +642,26 @@ void oscillation(){ // Колебания
   } while (!isEncoderButtonPressed);
 }
 
-void printOscillation(long time, int numberOfOscillation){
+void printOscillation(long time, int numberOfOscillation)
+{
   lcd.setCursor(0, 0);
   lcd.clear();
 
-  
   lcd.print(L"КОЛЕБАНИЯ ");
   lcd.print(" ");
   lcd.print(String(numberOfOscillation));
 
   lcd.setCursor(0, 1);
   // example. timeToPrint = 5672000 millis
-  long second = time / 1000000; // 5
+  long second = time / 1000000;               // 5
   long millisecond = time - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
+  millisecond = millisecond / 100;            // 6720
 
   // 5.67
   lcd.print(String(second));
   lcd.print(".");
   lcd.print(String(millisecond));
-  
-  
+
   lcd.print(L" сек.");
 }
 
@@ -664,20 +721,20 @@ void printTimeForStopWatch(long timeToPrint)
 {
   lcd.setCursor(0, 0);
   lcd.clear();
-  
+
   lcd.print(L"ВРЕМЯ ");
 
   // example. timeToPrint = 5672000 millis
-  long second = timeToPrint / 1000000; // 5
+  long second = timeToPrint / 1000000;               // 5
   long millisecond = timeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
+  millisecond = millisecond / 100;                   // 6720
 
   // 5.67
   lcd.print(String(second));
   lcd.print(".");
   lcd.print(String(millisecond));
   lcd.setCursor(0, 1);
-  
+
   lcd.print(L"     секунд     ");
 }
 
@@ -685,21 +742,22 @@ void printPreViewForStopWatch()
 {
   lcd.setCursor(0, 0);
   lcd.clear();
-  
+
   lcd.print(L"   ДЛЯ НАЧАЛА   ");
   lcd.setCursor(0, 1);
   lcd.print(L" НАЖМИТЕ  СТАРТ ");
 }
 
-void printResultTimeForStopWatch(long timeToPrint){
+void printResultTimeForStopWatch(long timeToPrint)
+{
   lcd.setCursor(0, 0);
   lcd.clear();
   lcd.print(L"   РЕЗУЛЬТАТ:   ");
 
   // example. timeToPrint = 5672000 millis
-  long second = timeToPrint / 1000000; // 5
+  long second = timeToPrint / 1000000;               // 5
   long millisecond = timeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
+  millisecond = millisecond / 100;                   // 6720
 
   // 5.67
   lcd.setCursor(0, 1);
@@ -711,12 +769,11 @@ void printResultTimeForStopWatch(long timeToPrint){
 
 /***********************************  STOP WATCH and his methods END ***********************************/
 
-
 /***********************************  TIMER and his methods START ***********************************/
 
 void timer()
-{ // Таймер
-  const int numberSound = 2;//количество сигналов
+{                            // Таймер
+  const int numberSound = 2; //количество сигналов
   const int delayBetweenSound = 500;
 
   byte analogPinForStartButtonOfTimer = 0; //номер порта для старта
@@ -736,7 +793,8 @@ void timer()
   delay(50);
   do
   {
-    if (last != counter || isNeedPreView) {
+    if (last != counter || isNeedPreView)
+    {
 
       counter = counter <= 0 ? 0 : counter;
       last = counter;
@@ -749,14 +807,14 @@ void timer()
     }
     if (isAnalogButtonPressed(analogPinForStartButtonOfTimer))
     {
-      needTimeForTimer = micros() + ( setTimeForTimer * 1000000 );
+      needTimeForTimer = micros() + (setTimeForTimer * 1000000);
       while (needTimeForTimer > micros())
-      { 
+      {
         delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
         currentTime = needTimeForTimer - micros();
         printRemaimingTimeForTimer(currentTime);
       }
-     
+
       printWhenTimeEndsForTimer();
       soundSignal(numberSound, delayBetweenSound);
       delay(1000); // показывать уведомление об окончании времени 1с
@@ -775,23 +833,24 @@ void printPreViewForTimer(double setTimeToPrint)
 {
   lcd.setCursor(0, 0);
   lcd.clear();
-  
+
   lcd.print(L"УСТАНОВИТЕ ВРЕМЯ");
-  
+
   lcd.setCursor(0, 1);
   lcd.print(String(setTimeToPrint));
   lcd.print(L" сек.");
 }
 
-void printRemaimingTimeForTimer(double timerTimeToPrint){
+void printRemaimingTimeForTimer(double timerTimeToPrint)
+{
   lcd.setCursor(0, 0);
   lcd.clear();
   lcd.print(L"ВРЕМЯ ");
 
   // example. timeToPrint = 5672000 millis
-  long second = timerTimeToPrint / 1000000; // 5
+  long second = timerTimeToPrint / 1000000;               // 5
   long millisecond = timerTimeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
+  millisecond = millisecond / 100;                        // 6720
 
   // 5.67
   lcd.print(String(second));
@@ -801,15 +860,14 @@ void printRemaimingTimeForTimer(double timerTimeToPrint){
   lcd.print(L" сек.");
 }
 
-void printWhenTimeEndsForTimer(){
+void printWhenTimeEndsForTimer()
+{
   lcd.setCursor(0, 0);
   lcd.clear();
   lcd.print(L"      СТОП!    ");
 }
 
 /***********************************  TIMER and his methods END ***********************************/
-
-
 
 /***********************************  COMMON methods START ***********************************/
 
@@ -818,14 +876,17 @@ bool isAnalogButtonPressed(byte analogPinNumber)
   return analogRead(analogPinNumber) < 300;
 }
 
-bool isPinHigh(byte pinNumber){
+bool isPinHigh(byte pinNumber)
+{
   return digitalRead(pinNumber) == HIGH;
 }
 
-void soundSignal(int numbersOfSound ,int timeBetweenSonds){
+void soundSignal(int numbersOfSound, int timeBetweenSonds)
+{
   const int valueOfSignal = 100;
 
-  for (int j = 0; j < numbersOfSound; j++){
+  for (int j = 0; j < numbersOfSound; j++)
+  {
     analogWrite(pin_Sound_Signal, 100); //включаем звук
     delay(timeBetweenSonds);
     analogWrite(pin_Sound_Signal, 0); //выключаем звук
@@ -833,10 +894,14 @@ void soundSignal(int numbersOfSound ,int timeBetweenSonds){
   }
 }
 
-void setRealyStatus(bool status){
-  if(status){
+void setRealyStatus(bool status)
+{
+  if (status)
+  {
     digitalWrite(pin_relay, HIGH);
-  } else {
+  }
+  else
+  {
     digitalWrite(pin_relay, LOW);
   }
 }
