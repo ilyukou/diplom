@@ -15,6 +15,12 @@ const int pin_Sound_Signal = 3;
 
 const int pin_relay = 10;
 
+// кнопка включения магнита
+const int pinRealyButtonOn = 2;
+
+// кнопка выключения магнита
+const int pinRealyButtonOff = 3;
+
 unsigned long CurrentTime, LastTime;
 enum eEncoderState
 {
@@ -86,6 +92,13 @@ void setup()
 
   // настройка реле
   pinMode(pin_relay, OUTPUT);
+
+
+  // кнопка включения магнита
+  pinMode(pinRealyButtonOn, INPUT);
+
+  // кнопка выключения магнита
+  pinMode(pinRealyButtonOff, INPUT);
 
   Serial.begin(9600);
   counter = 0;
@@ -275,8 +288,7 @@ void exitFromOption()
 
 /***********************************  LINEINOE PEREME and his methods START ***********************************/
 
-void linearMovement()
-{ // Линейного перемещения
+void linearMovement(){ // Линейного перемещения
 
   bool isMagnetDown = false;
   bool isOptocoupler = false;
@@ -300,22 +312,11 @@ void linearMovement()
   {
     isOptocoupler = false;
     
-    if (isAnalogButtonPressed(pinDistanceControlStart))
-    {
-      setRealyStatus(false);
-      isMagnetDown = true;
-    }
-
-    if (isAnalogButtonPressed(pinDistanceControlStop))
-    {
-      setRealyStatus(true);
-      isMagnetDown = false;
-    }
+    checkStatusRealyButton_andSetNewStatusToRealy();
 
     // Задача расстояния
     
-    if (last != counter || isNeedPreView)
-    { 
+    if (last != counter || isNeedPreView){ 
       counter = counter <= 0 ? 0 : counter;
       last = counter;
 
@@ -323,7 +324,6 @@ void linearMovement()
       isNeedPreView = false;
 
       printLinearMovementDistance(needDistance);
-      
     }
 
     if (!isPinHigh(pin_Optocoupler)) {
@@ -334,8 +334,7 @@ void linearMovement()
 
    
 
-    if (isOptocoupler && needDistance > 0)
-    {
+    if (isOptocoupler && needDistance > 0){
       
       lcd.setCursor(0, 0);
       lcd.clear();
@@ -418,10 +417,11 @@ long startLinearDistanceCalculation(int needLinerDistance)
 
   timeForStartCounting = micros();
 
-  while (needLinerDistance > 0)
-  {
-    if (isPinHigh(pin_Impulse_Counter))
-    { 
+  while (needLinerDistance > 0){
+
+    checkStatusRealyButton_andSetNewStatusToRealy();
+
+    if (isPinHigh(pin_Impulse_Counter)){ 
       Serial.println("Оптопара");
       needLinerDistance--;
       distanceTravelTime = micros() - timeForStartCounting; // милилсекунды
@@ -882,15 +882,23 @@ void soundSignal(int numbersOfSound, int timeBetweenSonds)
   }
 }
 
-void setRealyStatus(bool status)
-{
-  if (status)
-  {
+void setRealyStatus(bool status){
+  if (status){
     digitalWrite(pin_relay, HIGH);
-  }
-  else
-  {
+  } else {
     digitalWrite(pin_relay, LOW);
+  }
+}
+
+// проверяет какой статус у кнопок управления магнитом и управляет магнитом
+void checkStatusRealyButton_andSetNewStatusToRealy(){
+  if (isAnalogButtonPressed(pinRealyButtonOn)){
+    setRealyStatus(false);
+     
+  }
+
+  if (isAnalogButtonPressed(pinRealyButtonOff)){
+    setRealyStatus(true);
   }
 }
 
