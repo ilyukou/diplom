@@ -1,6 +1,7 @@
-#include <LCD_1602_RUS.h>
+#define _LCD_TYPE 1
+#include <LCD_1602_RUS_ALL.h>
 
-LCD_1602_RUS lcd(0x27, 16, 2);
+LCD_1602_RUS <LiquidCrystal_I2C> lcd(0x27, 16, 2);
 
 // Энкодер
 #define pin_CLK 4
@@ -71,9 +72,7 @@ eEncoderState GetEncoderState()
 
 void setup()
 {
-  Wire.begin();
-  /*настройка блока индикации */
-  lcd.init();
+  lcd.begin();
   lcd.backlight(); // Включаем подсветку дисплея
 
   /*настройка энкодера*/
@@ -299,6 +298,8 @@ void linearMovement()
   delay(50);
   do
   {
+    isOptocoupler = false;
+    
     if (isAnalogButtonPressed(pinDistanceControlStart))
     {
       setRealyStatus(false);
@@ -322,41 +323,30 @@ void linearMovement()
       isNeedPreView = false;
 
       printLinearMovementDistance(needDistance);
-      Serial.println(needDistance);
+      
     }
 
-    if (isPinHigh(pin_Optocoupler)) {
-      isOptocoupler = true;
+    if (!isPinHigh(pin_Optocoupler)) {
+      delay(10);
+      isOptocoupler = !isPinHigh(pin_Optocoupler);
+      Serial.println(isOptocoupler);
     }
 
-    if (isOptocoupler && needDistance <= 0 && isMagnetDown)
+   
+
+    if (isOptocoupler && needDistance > 0)
     {
-      falseTriggeringOptocouplersStart();
-      isMagnetDown = false;
-      delay(2000);
-      isNeedPreView = true;
-      isOptocoupler = false;
-      Serial.println("first");
-    }
+      
+      lcd.setCursor(0, 0);
+      lcd.clear();
 
-    if (isOptocoupler && needDistance > 0 && !isMagnetDown)
-    {
-      Serial.println("second");
-      falseTriggeringOptocouplersStart();
-      delay(2000);
-      isMagnetDown = false;
-      isNeedPreView = true;
-      isOptocoupler = false;
-    }
-
-    if (isOptocoupler && needDistance > 0 && isMagnetDown)
-    {
-      Serial.println("last");
+      lcd.print(L"     СТАРТ     ");
+      
       distanceTravelTime = startLinearDistanceCalculation(needDistance);
-      setRealyStatus(true);
       printResultDistanceTravelTime(distanceTravelTime, needDistance);
       isNeedPreView = true;
       isOptocoupler = false;
+      isMagnetDown = false;
       delay(2500);
     }
 
@@ -370,9 +360,7 @@ void falseTriggeringOptocouplersStart(){
   lcd.setCursor(0, 0);
   lcd.clear();
 
-  lcd.print(L"     ЛОЖНОЕ     ");
-  lcd.setCursor(0, 1);
-  lcd.print(L"  СРАБАТЫВАНИЕ  ");
+  lcd.print(L"     ERROR     ");
 }
 
 void printResultDistanceTravelTime(long timeToPrint, int distanceToPrint)
