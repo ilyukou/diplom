@@ -1,4 +1,4 @@
-int pin = 4;
+int pin = 7;
 
 long count = 0;
 
@@ -8,12 +8,11 @@ void setup() {
 
 void loop() {
 
- int count = analogRead(pin);
+ int count = digitalRead(pin);
  
- if(count > 541 || count < 530){
-    Serial.println(analogRead(pin));
- }
+  Serial.println(count);
+
  
  
- delay(100);
+ delay(5);
 }
