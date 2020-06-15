@@ -20,11 +20,11 @@ const int countOfHoles = 68;
 
 const double pi = 3.1415926;
 
-// длина окружности 
-const double diameter = 2.5; // cm
+// диаметр
+const double diameter =z; // cm
 
-// ( diameter * pi ) / ( countOfHoles * 2 );
-const double step =  0.0577; // cm
+// ( diameter * pi ) / ( countOfHoles  );
+const double step =  0.115; // cm
 
 
 void setup() { 
@@ -67,7 +67,7 @@ void managment(){
     lcd.setCursor(0, 0);
     lcd.print("Подсчет");
 
-    countingTime(10);
+    countingTime(50);
     delay(3000);
 
     lcd.clear();
@@ -88,6 +88,8 @@ void countingTime(double length){ // в см
     long endTime = micros();
 
     printResult(endTime - startTime);
+
+    delay(5000);
 }
 
 void counting(long count){
@@ -97,23 +99,30 @@ void counting(long count){
 
     setRealyStatus(false);
 
+    int countImpulse = 0;
+
     Serial.println("Начало цикла");
-    while(count > 0){
+    while(countImpulse < count){
 
         int newState = digitalRead(pin);
 
         if(newState != lastState){
-            count--;
-
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print(count*step);
+            countImpulse++;
 
             lastState = newState;
         }
     }
+
     setRealyStatus(true);
-    Serial.println("Конец");
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(countImpulse * step);
+
+    lcd.setCursor(0, 1);
+    lcd.print(countImpulse);
+
+    delay(5000);
 }
 
 void printResult(long timerTimeToPrint){
