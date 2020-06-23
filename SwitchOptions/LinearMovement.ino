@@ -178,13 +178,17 @@ void printOption(){
 
   lcd.setCursor(0, 1);
 
-  if (counter =! 0){
+  if (counter > 1 || counter < 0){
     counter = 0;
   }
 
   switch (counter){
-    case 0: // ЛИНЕЙНОЕ
-        lcd.print(L"1. ЛИНЕЙНОЕ");
+    case 0: // ЛИНЕЙНОЕ 1
+        lcd.print(L"1. ЛИНЕЙНОЕ МАГН");
+        break;
+
+    case 1: // ЛИНЕЙНОЕ 2 
+        lcd.print(L"2. ЛИНЕЙНОЕ ОПТП");
         break;
   }
 }
@@ -194,8 +198,15 @@ void goToOption(){
     switch (counter){
 
         case 0: // ЛИНЕЙНОЕ
-            isEncoderButtonPressed = false;z
-            linearMovement();
+            isEncoderButtonPressed = false;
+            linearMovement(0);
+            counter = 0; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+            exitFromOption();
+            break;
+
+        case 1: // ЛИНЕЙНОЕ
+            isEncoderButtonPressed = false;
+            linearMovement(1);
             counter = 0; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
             break;
@@ -209,9 +220,9 @@ void exitFromOption(){
   delay(500);
 }
 
-/***********************************  LINEINOE PEREME and his methods START ***********************************/
+/***********************************  LINEINOE PEREME 1 and his methods START ***********************************/
 
-void linearMovement(){ // Линейного перемещения
+void linearMovement(int typeMode){ // Линейного перемещения
 
     double needDistance = 0;
 
@@ -240,8 +251,16 @@ void linearMovement(){ // Линейного перемещения
         }
 
 
-        if (needDistance > 0 && isAnalogButtonPressed(analogPin_0_startMeasurementButton)){
-            countingLinearMovement(needDistance);
+        if(needDistance > 0 ){
+            if (isAnalogButtonPressed(analogPin_0_startMeasurementButton) && typeMode == 0){
+                printLinearMovementRun();
+                countingLinearMovement(needDistance);
+            }
+
+            if (digitalRead(digitalPin_5_Optocoupler) == LOW  && typeMode == 1){
+                printLinearMovementRun();
+                countingLinearMovement(needDistance);
+            }
         }
 
         encoder();
@@ -279,6 +298,14 @@ void countingLinearMovement(double length){
 
     printResult(endTime - startTime);
     delay(5000);
+}
+
+void printLinearMovementRun(){
+
+    lcd.setCursor(0, 0);
+    lcd.clear();
+
+    lcd.print(L"ПОДСЧЁТ");
 }
 
 void printLinearMovementDistance(int distanceToPrint){

@@ -13,7 +13,7 @@ const int pin_Impulse_Counter = 8; //пин для подсчета испуль
 
 const int pin_Sound_Signal = 3;
 
-const int pin_relay = 10;
+const int printLinearMovementDistance = 10;
 
 // кнопка включения магнита
 const int pinRealyButtonOn = 2;
@@ -615,13 +615,7 @@ void oscillation()
         if (counter % 2 == 0)
         {
           printOscillation(micros() - timeForStartCounting, counter / 2);
-        }
-        else
-        {
-          printOscillation(micros() - timeForStartCounting, (counter + 1) / 2);
-        }
-
-        delay(100);
+        }if (ButtonPrev));
       }
       isNeedPreView = true;
       delay(2500);
