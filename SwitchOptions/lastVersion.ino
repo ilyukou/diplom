@@ -238,6 +238,10 @@ void goToOption(){
             break;
 
         case 3: // ПЕРИОД
+            // функция вроде бы должна работать, но там нужно перебить порты 
+            // которые используются с аналоговых на цифру. Но большой вопрос стоит ли это делать
+            // поскольку пока что период никто не будет считать 
+            // Поэтому делай наверное сразу функции для линейного перемещения!!!
             //oscillation();
             counter = 3; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
@@ -263,6 +267,85 @@ void exitFromOption(){
   encoder();
   delay(500);
 }
+
+/***********************************  OSCILLATION and his methods START ***********************************/
+
+
+void oscillation(){ // Колебания
+  long timeForStartCounting = 0;
+  long countOfOscillations = 0;
+
+  int startPin = 3;
+  int pinImpulse = 2;
+
+  isNeedPreView = true;
+
+  counter = 0;
+  int last = counter;
+
+  delay(50);
+  do
+  {
+    if (last != counter || isNeedPreView)
+    { 
+      counter = counter <= 0 ? 0 : counter;
+      last = counter;
+
+      isNeedPreView = false;
+      printOscillation(0, counter);
+    }
+
+    if (isAnalogButtonPressed(startPin) && counter > 0) {
+      timeForStartCounting = micros();
+      counter *= 2;
+      while (counter != 0)
+      {
+        if (isAnalogButtonPressed(pinImpulse)){
+          counter--;
+
+        }
+        
+        if(counter % 2 == 0){
+          printOscillation(micros() - timeForStartCounting, counter/2);
+        } else{
+          printOscillation(micros() - timeForStartCounting, (counter + 1)/2);
+        }
+        
+        delay(100);    
+      }
+      isNeedPreView = true;
+      delay(2500);
+    }
+    encoder();
+  } while (!isEncoderButtonPressed);
+}
+
+void printOscillation(long time, int numberOfOscillation){
+  lcd.setCursor(0, 0);
+  lcd.clear();
+
+  
+  lcd.print(L"КОЛЕБАНИЯ ");
+  lcd.print(" ");
+  lcd.print(String(numberOfOscillation));
+
+  lcd.setCursor(0, 1);
+  // example. timeToPrint = 5672000 millis
+  long second = time / 1000000; // 5
+  long millisecond = time - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
+
+  // 5.67
+  lcd.print(String(second));
+  lcd.print(".");
+  lcd.print(String(millisecond));
+  
+  
+  lcd.print(L" сек.");
+}
+
+/***********************************  OSCILLATION and his methods END ***********************************/
+
 
 /***********************************  STOP WATCH and his methods START ***********************************/
 
