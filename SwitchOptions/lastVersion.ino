@@ -8,6 +8,7 @@ LCD_1602_RUS <LiquidCrystal_I2C> lcd(0x27, 16, 2);
 // Цифровые порты
 const int digitalPin_2_DT = 2;
 const int digitalPin_3_soundSignal = 3;
+// !!! Изменил с 4 на 6, поскольку 4 пин плохо работает
 const int digitalPin_4_CLK = 4;
 const int digitalPin_5_Optocoupler = 5;
 const int digitalPin_6 = 6;
@@ -52,6 +53,9 @@ long leftBallTimeValues[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 long rightBallTimeValues[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+bool isNeedPreView = true;
+bool isEncoderButtonPressed = false;
+
 eEncoderState GetEncoderState(){
 
     // Считываем состояние энкодера
@@ -77,9 +81,9 @@ eEncoderState GetEncoderState(){
 
             if ((!EncoderA) && (EncoderAPrev)){ // Сигнал A изменился с 1 на 0
                 if (EncoderB)
-                Result = eRight; // B=1 => энкодер вращается по часовой
+                Result = eLeft; // B=1 => энкодер вращается по часовой
                 else
-                Result = eLeft; // B=0 => энкодер вращается против часовой
+                Result = eRight; // B=0 => энкодер вращается против часовой
             }
 
             EncoderAPrev = EncoderA; // запомним текущее состояние
@@ -112,13 +116,10 @@ void setup(){
 
     pinMode(digitalPin_10_relay, OUTPUT); // Настройка реле
 
-
+    isEncoderButtonPressed = false;
     Serial.begin(9600);
     counter = 0;
 }
-
-bool isNeedPreView = true;
-bool isEncoderButtonPressed = false;
 
 void loop(){
     // Для единоразового обновление экрана при включении или выхода с режима
@@ -130,14 +131,41 @@ void loop(){
 
     // Считывание состояние кнопок отвечающих за реле
     //checkStatusRealyButton_andSetNewStatusToRealy();
-
+    
     // Переход в режим
     if (isEncoderButtonPressed){
+        isEncoderButtonPressed = false;
+        Serial.println(" в переходе ");
         goToOption();
         isNeedPreView = true; // указывает что после работы в режиме нужно отрисовать экран заново
     }
+    // работа с энкодером, а именно чтение состояния энкодера + вывод необходимого режима работы
+    switch (GetEncoderState()){
+        case eNone:
+            return;
+        case eButton: // Нажали кнопку
+            isEncoderButtonPressed = true;
+            break;
 
-    encoder();
+        case eLeft:
+            // Энкодер вращается влево
+            Serial.println(" Энкодер вращается влево ");
+            counter--;
+            prtintTitle();
+            printOption();
+            isEncoderButtonPressed = false;
+            break;
+
+        case eRight:
+            // Энкодер вращается вправо
+            Serial.println(" Энкодер вращается вправо ");
+            counter++;
+            prtintTitle();
+            printOption();
+            isEncoderButtonPressed = false;
+            break;
+        }
+    delay(200);
 }
 
 void prtintTitle(){
@@ -151,11 +179,15 @@ void prtintTitle(){
 void printOption(){
 
   lcd.setCursor(0, 1);
-
-  if (counter > 5 || counter < 0){
+  
+  if (counter > 5){
     counter = 0;
+  } else if (counter < 0) {
+    counter = 5;
   }
 
+
+  Serial.println(counter);
   switch (counter){
     case 0: // ЛИНЕЙНОЕ 1
         lcd.print(L"1. ЛИНЕЙНОЕ МАГН");
@@ -169,22 +201,22 @@ void printOption(){
         lcd.print(L"3. УГЛОВОЕ");
         break;    
 
-    case 3: // СЕКУНДОМЕР
-        lcd.print(L"4. СЕКУНДОМЕР");
+    case 3: // ПЕРИОД
+        lcd.print(L"4. ПЕРИОД");
         break;
 
-    case 4: // ТАЙМЕР
-        lcd.print(L"5. ТАЙМЕР");
+    case 4: // СЕКУНДОМЕР
+        lcd.print(L"5. СЕКУНДОМЕР");
         break;
 
-    case 5: // ПЕРИОД
-        lcd.print(L"6. ПЕРИОД");
+    case 5: // ТАЙМЕР
+        lcd.print(L"6. ТАЙМЕР");
         break;
   }
 }
 
 void goToOption(){
-    isEncoderButtonPressed = false;
+
     switch (counter){
 
         case 0: // ЛИНЕЙНОЕ
@@ -279,25 +311,32 @@ int convertLengthToImpulse(double length){
 }
 
 void encoder(){
+    isEncoderButtonPressed = false;
+
     switch (GetEncoderState()){
         case eNone:
-        isEncoderButtonPressed = false;
+        
         return;
 
     case eButton: // Нажали кнопку
+        Serial.println(" Нажали кнопку энкодера ");
         isEncoderButtonPressed = true;
         break;
 
+    //!!!! пины вращения подключены неправильно, а именно при вращении вправо мы переходим в eLeft и наоборот
+    // поэтому ставлю при вращении влево counter++;
     case eLeft:
         // Энкодер вращается влево
-        counter++;
-        isEncoderButtonPressed = false;
+        Serial.println(" Энкодер вращается влево ");
+
+        counter--;
         break;
 
     case eRight:
         // Энкодер вращается вправо
-        counter--;
-        isEncoderButtonPressed = false;
+        Serial.println(" Энкодер вращается вправо ");
+
+        counter++;
         break;
     }
 }
