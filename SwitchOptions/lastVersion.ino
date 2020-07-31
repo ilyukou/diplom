@@ -244,7 +244,7 @@ void goToOption(){
             break;
 
         case 4: // СЕКУНДОМЕР
-            //stopwatch();
+            stopwatch();
             counter = 4; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
             break;
@@ -263,6 +263,107 @@ void exitFromOption(){
   encoder();
   delay(500);
 }
+
+/***********************************  STOP WATCH and his methods START ***********************************/
+
+// нужно взять 2 кнопки (аналоговые) и проверять нажаты ли они
+
+void stopwatch()
+{ // Секундомер
+
+  const byte analogPinForStartButtonOfStopWatch = analogPin_0_startMeasurementButton; //номер порта для старта
+  const byte analogPinForStopButtonOfStopWatch = analogPin_1_stopMeasurementButton;  //номер порта для стопа
+
+  long timeOfStopWatch = 0;
+  long currentTime = 0;
+
+  bool isNeedPreView = true;
+
+  delay(100);
+  do
+  {
+    if (isNeedPreView)
+    {
+      // выводим стандартвое меню
+      printPreViewForStopWatch();
+      isNeedPreView = false;
+    }
+    // нажмите пуск
+
+    if (isAnalogButtonPressed(analogPinForStartButtonOfStopWatch))
+    {
+      timeOfStopWatch = micros();
+      while (!isAnalogButtonPressed(analogPinForStopButtonOfStopWatch))
+      {
+
+        delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
+        currentTime = micros() - timeOfStopWatch;
+
+        printTimeForStopWatch(currentTime);
+      }
+      printResultTimeForStopWatch(currentTime);
+
+      delay(2500); // 2.5c время показки значения, перед выходов обратно в меню секундомера
+
+      // возвращение значений в исходное положение
+      isNeedPreView = true;
+    }
+
+    encoder(); // проверяем вдруг кнопка будет нажата, тогда цикл while прекратиться
+
+  } while (!isEncoderButtonPressed);
+}
+
+void printTimeForStopWatch(long timeToPrint)
+{
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  
+  lcd.print(L"ВРЕМЯ ");
+
+  // example. timeToPrint = 5672000 millis
+  long second = timeToPrint / 1000000; // 5
+  long millisecond = timeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
+
+  // 5.67
+  lcd.print(String(second));
+  lcd.print(".");
+  lcd.print(String(millisecond));
+  lcd.setCursor(0, 1);
+  
+  lcd.print(L"     секунд     ");
+}
+
+void printPreViewForStopWatch()
+{
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  
+  lcd.print(L"   ДЛЯ НАЧАЛА   ");
+  lcd.setCursor(0, 1);
+  lcd.print(L" НАЖМИТЕ  СТАРТ ");
+}
+
+void printResultTimeForStopWatch(long timeToPrint){
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print(L"   РЕЗУЛЬТАТ:   ");
+
+  // example. timeToPrint = 5672000 millis
+  long second = timeToPrint / 1000000; // 5
+  long millisecond = timeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
+
+  // 5.67
+  lcd.setCursor(0, 1);
+  lcd.print(String(second));
+  lcd.print(".");
+  lcd.print(String(millisecond));
+  lcd.print(L" сек.");
+}
+
+/***********************************  STOP WATCH and his methods END ***********************************/
 
 
 /***********************************  TIMER and his methods START ***********************************/
