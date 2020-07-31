@@ -250,7 +250,7 @@ void goToOption(){
             break;
 
         case 5: // ТАЙМЕР
-            //timer();
+            timer();
             counter = 5; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
             break;
@@ -263,6 +263,103 @@ void exitFromOption(){
   encoder();
   delay(500);
 }
+
+
+/***********************************  TIMER and his methods START ***********************************/
+
+void timer(){ // Таймер
+  const int numberSound = 2;        //количество звуковых сигналов 
+  const int delayBetweenSound = 500;// время между звуковыми сигналами при остановке
+
+  byte analogPinForStartButtonOfTimer = analogPin_0_startMeasurementButton; //номер порта для старта
+  
+  double stepForTimer = 0.5;  // шаг при задании необходимого времени для секунды
+  double setTimeForTimer = 0; // предварительная настройка задаваемого времени
+  double currentTime = 0;     // предварительная настройка текущего времени
+
+  double needTimeForTimer = 0;
+
+  bool isNeedPreView = true;
+
+  counter = 0; //
+
+  int last = counter;
+  bool isNeedPrint = true;
+
+  delay(50);
+  do {
+    if (last != counter || isNeedPreView) {
+
+      counter = counter <= 0 ? 0 : counter;
+      last = counter;
+
+      setTimeForTimer = last * stepForTimer;
+
+      printPreViewForTimer(setTimeForTimer);
+
+      isNeedPreView = false;
+    }
+    if (isAnalogButtonPressed(analogPinForStartButtonOfTimer)) {
+      needTimeForTimer = micros() + ( setTimeForTimer * 1000000 );
+      while (needTimeForTimer > micros())
+      { 
+        delay(100); // обновлять значения времени через 100мс, чтобы экран не дребежал
+        currentTime = needTimeForTimer - micros();
+        printRemaimingTimeForTimer(currentTime);
+      }
+     
+      printWhenTimeEndsForTimer();
+      soundSignal(numberSound, delayBetweenSound);
+      delay(1000); // показывать уведомление об окончании времени 1с
+
+      // возвращение значений в исходное положение
+      counter = 0;
+      isNeedPreView = true;
+    }
+
+    encoder(); // проверяем вдруг кнопка будет нажата, тогда цикл while прекратиться
+
+  } while (!isEncoderButtonPressed);
+}
+
+void printPreViewForTimer(double setTimeToPrint)
+{
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  
+  lcd.print(L"УСТАНОВИТЕ ВРЕМЯ");
+  
+  lcd.setCursor(0, 1);
+  lcd.print(String(setTimeToPrint));
+  lcd.print(L" сек.");
+}
+
+void printRemaimingTimeForTimer(double timerTimeToPrint){
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print(L"ВРЕМЯ ");
+
+  // example. timeToPrint = 5672000 millis
+  long second = timerTimeToPrint / 1000000; // 5
+  long millisecond = timerTimeToPrint - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
+
+  // 5.67
+  lcd.print(String(second));
+  lcd.print(".");
+  lcd.print(String(millisecond));
+  lcd.setCursor(0, 1);
+  lcd.print(L" сек.");
+}
+
+void printWhenTimeEndsForTimer(){
+  lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.print(L"      СТОП!    ");
+}
+
+/***********************************  TIMER and his methods END ***********************************/
+
 
 /***********************************  COMMON methods START ***********************************/
 
