@@ -94,7 +94,7 @@ eEncoderState GetEncoderState(){
 
 void setup(){
 
-    lcd.begin(); // Включение экрана
+    lcd.init(); // Включение экрана
     lcd.backlight(); // Включаем подсветку дисплея
 
 
