@@ -220,13 +220,13 @@ void goToOption(){
     switch (counter){
 
         case 0: // ЛИНЕЙНОЕ
-            //linearMovement(0);
+            linearMovement(0);
             counter = 0; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
             break;
 
         case 1: // ЛИНЕЙНОЕ
-            //linearMovement(1);
+            linearMovement(1);
             counter = 1; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
             break;
@@ -267,6 +267,129 @@ void exitFromOption(){
   encoder();
   delay(500);
 }
+
+/******************  ЛИНЕЙНОЕ ПЕРЕМЕЩЕНИЕ | НАЧАЛО ******************/
+
+void linearMovement(int typeMode){ // Линейного перемещения
+
+    double needDistance = 0;
+
+    double stepForLinearMovement = 1; // cm
+
+    isNeedPreView = true;
+
+    counter = 0;
+    int last = counter;
+
+    delay(50);
+    do {
+        
+        // Считывание состояние кнопок отвечающих за реле
+        checkStatusRealyButton_andSetNewStatusToRealy();
+
+        // Задача расстояния
+        if (last != counter || isNeedPreView){ 
+            counter = counter <= 0 ? 0 : counter;
+            last = counter;
+
+            needDistance = last * stepForLinearMovement;
+            isNeedPreView = false;
+
+            printLinearMovementDistance(needDistance);
+        }
+
+
+        if(needDistance > 0 ){
+            if (isAnalogButtonPressed(analogPin_0_startMeasurementButton) && typeMode == 0){
+                printLinearMovementRun();
+                countingLinearMovement(needDistance);
+            }
+
+            if (digitalRead(digitalPin_5_Optocoupler) == LOW  && typeMode == 1){
+                printLinearMovementRun();
+                countingLinearMovement(needDistance);
+            }
+        }
+
+        encoder();
+
+    } while (!isEncoderButtonPressed);
+}
+
+void countingLinearMovement(double length){
+
+    long count = convertLengthToImpulse(length);
+
+    int countImpulse = 0;
+    
+
+    int lastState = digitalRead(digitalPin_8_impulseCounter);
+
+    setRealyStatus(false);
+
+    long startTime = micros();
+
+    while(countImpulse < count){
+
+        int newState = digitalRead(digitalPin_8_impulseCounter);
+
+        if(newState != lastState){
+            countImpulse++;
+
+            lastState = newState;
+        }
+    }
+
+    setRealyStatus(true);
+
+    long endTime = micros();
+
+    printResult(endTime - startTime);
+    delay(5000);
+}
+
+void printLinearMovementRun(){
+
+    lcd.setCursor(0, 0);
+    lcd.clear();
+
+    lcd.print(L"ПОДСЧЁТ");
+}
+
+void printLinearMovementDistance(int distanceToPrint){
+    if (distanceToPrint < 0){
+        distanceToPrint = 0;
+    }
+
+    lcd.setCursor(0, 0);
+    lcd.clear();
+
+    lcd.print(L"РАССТОЯНИЕ");
+
+    lcd.setCursor(0, 1);
+    lcd.print("    ");
+    lcd.print(String(distanceToPrint));
+    lcd.print(L" см");
+}
+
+void printResult(long timerTimeToPrint){
+
+    lcd.setCursor(0, 0);
+    lcd.clear();
+    lcd.print(L"ВРЕМЯ ");
+
+    long second = timerTimeToPrint / 1000000;               
+    long millisecond = timerTimeToPrint - second * 1000000;
+    millisecond = millisecond / 100;
+
+    lcd.print(String(second));
+    lcd.print(".");
+    lcd.print(String(millisecond));
+    lcd.setCursor(0, 1);
+    lcd.print(L" сек.");
+}
+
+/******************  ЛИНЕЙНОЕ ПЕРЕМЕЩЕНИЕ | КОНЕЦ ******************/
 
 /***********************************  OSCILLATION and his methods START ***********************************/
 
