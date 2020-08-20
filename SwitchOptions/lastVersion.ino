@@ -300,11 +300,13 @@ void linearMovement(int typeMode){ // Линейного перемещения
 
 
         if(needDistance > 0 ){
+            // Старт по кнопке отсчёта движения
             if (isAnalogButtonPressed(analogPin_0_startMeasurementButton) && typeMode == 0){
                 printLinearMovementRun();
                 countingLinearMovement(needDistance);
             }
 
+            //  Старт по оптопаре отсчёта движения
             if (digitalRead(digitalPin_5_Optocoupler) == LOW  && typeMode == 1){
                 printLinearMovementRun();
                 countingLinearMovement(needDistance);
@@ -318,33 +320,49 @@ void linearMovement(int typeMode){ // Линейного перемещения
 
 void countingLinearMovement(double length){
 
+    // Переводит длину в требуемое количество импульсов для окончания счёта
     long count = convertLengthToImpulse(length);
 
+    // Количество пришедших импульсов
     int countImpulse = 0;
-    
 
+    // Опрос последнего состояния энкодера
     int lastState = digitalRead(digitalPin_8_impulseCounter);
 
+    // Отпускает магнит
     setRealyStatus(false);
 
+    // Запоминает время начала отсчёта
     long startTime = micros();
 
+    // Работает до момент когда пришедших импульсов будет столько же сколько надо для данной длины
     while(countImpulse < count){
 
+        // Опрашивает состояние энкодера
         int newState = digitalRead(digitalPin_8_impulseCounter);
 
+        // Пример: Если перед запуском было состояние 0, а новое 0 - значит энкодер еще не повернулся
+        // Если же его состояние 1 - значит произошел поворот энкодера и он поменял состояние
         if(newState != lastState){
+
+            // Счётчик прибавляет единицу
             countImpulse++;
 
+            // Новое значение присваиваетя старому значению  
             lastState = newState;
         }
     }
 
+    // После остановки счёта срабатывает реле и останавливает груз
     setRealyStatus(true);
 
+    // Получаем время окончания отсчёта
     long endTime = micros();
 
+    // Находим время движения груза и выводим его на экран
     printResult(endTime - startTime);
+
+    // Ожидание 5с и возвращение в исходное состояние
     delay(5000);
 }
 
@@ -353,7 +371,7 @@ void printLinearMovementRun(){
     lcd.setCursor(0, 0);
     lcd.clear();
 
-    lcd.print(L"ПОДСЧЁТ");
+    lcd.print(L"   ПОДСЧЁТ...   ");
 }
 
 void printLinearMovementDistance(int distanceToPrint){
@@ -364,9 +382,11 @@ void printLinearMovementDistance(int distanceToPrint){
     lcd.setCursor(0, 0);
     lcd.clear();
 
-    lcd.print(L"РАССТОЯНИЕ");
+    lcd.print(L"   РАССТОЯНИЕ   ");
 
     lcd.setCursor(0, 1);
+
+    // FIXME дописать функцию, которая определяла бы длину числа и подстраивало его по середине строки
     lcd.print("    ");
     lcd.print(String(distanceToPrint));
     lcd.print(L" см");
@@ -382,6 +402,7 @@ void printResult(long timerTimeToPrint){
     long millisecond = timerTimeToPrint - second * 1000000;
     millisecond = millisecond / 100;
 
+    // FIXME дописать функцию, которая определяла бы длину числа и подстраивало его по середине строки
     lcd.print(String(second));
     lcd.print(".");
     lcd.print(String(millisecond));
@@ -709,7 +730,7 @@ void checkStatusRealyButton_andSetNewStatusToRealy(){
     }
 }
 
-// Конвертирует значения длины в количество импульсов
+// Переводит длину в требуемое количество импульсов для окончания счёта
 int convertLengthToImpulse(double length){
     return length / step;
 }
