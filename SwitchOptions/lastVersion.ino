@@ -399,17 +399,6 @@ void printResult(long timerTimeToPrint){
     lcd.print(L"ВРЕМЯ ");
 
     printTime(timerTimeToPrint, 1);
-    /*
-    long second = timerTimeToPrint / 1000000;               
-    long millisecond = timerTimeToPrint - second * 1000000;
-    millisecond = millisecond / 100;
-
-    // FIXME дописать функцию, которая определяла бы длину числа и подстраивало его по середине строки
-    lcd.print(String(second));
-    lcd.print(".");
-    lcd.print(String(millisecond));
-    lcd.setCursor(0, 1);
-    lcd.print(L" сек.");*/
 }
 
 /******************  ЛИНЕЙНОЕ ПЕРЕМЕЩЕНИЕ | КОНЕЦ ******************/
@@ -476,19 +465,6 @@ void printOscillation(long time, int numberOfOscillation){
   lcd.print(String(numberOfOscillation));
 
   printTime(time, 1);
-  /*lcd.setCursor(0, 1);
-  // example. timeToPrint = 5672000 millis
-  long second = time / 1000000; // 5
-  long millisecond = time - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
-
-  // 5.67
-  lcd.print(String(second));
-  lcd.print(".");
-  lcd.print(String(millisecond));
-  
-  
-  lcd.print(L" сек.");*/
 }
 
 /***********************************  OSCILLATION and his methods END ***********************************/
@@ -552,19 +528,6 @@ void printTimeForStopWatch(long timeToPrint)
   lcd.print(L"ВРЕМЯ ");
 
   printTime(timeToPrint, 1);
-  /*
-  // example. timeToPrint = 5672000 millis
-  long second = timeToPrint / 1000000; // 5
-  long millisecond = timeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
-
-  // 5.67
-  lcd.print(String(second));
-  lcd.print(".");
-  lcd.print(String(millisecond));
-  lcd.setCursor(0, 1);
-  
-  lcd.print(L"     секунд     ");*/
 }
 
 void printPreViewForStopWatch()
@@ -583,18 +546,6 @@ void printResultTimeForStopWatch(long timeToPrint){
   lcd.print(L"   РЕЗУЛЬТАТ:   ");
 
   printTime(timeToPrint, 1);
-  /*
-  // example. timeToPrint = 5672000 millis
-  long second = timeToPrint / 1000000; // 5
-  long millisecond = timeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
-
-  // 5.67
-  lcd.setCursor(0, 1);
-  lcd.print(String(second));
-  lcd.print(".");
-  lcd.print(String(millisecond));
-  lcd.print(L" сек.");*/
 }
 
 /***********************************  STOP WATCH and his methods END ***********************************/
@@ -675,17 +626,6 @@ void printRemaimingTimeForTimer(double timerTimeToPrint){
   lcd.print(L"ВРЕМЯ ");
 
   printTime(timerTimeToPrint, 1);
-  /*// example. timeToPrint = 5672000 millis
-  long second = timerTimeToPrint / 1000000; // 5
-  long millisecond = timerTimeToPrint - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
-
-  // 5.67
-  lcd.print(String(second));
-  lcd.print(".");
-  lcd.print(String(millisecond));
-  lcd.setCursor(0, 1);
-  lcd.print(L" сек.");*/
 }
 
 void printWhenTimeEndsForTimer(){
