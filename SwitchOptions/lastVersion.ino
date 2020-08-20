@@ -384,12 +384,7 @@ void printLinearMovementDistance(int distanceToPrint){
 
     lcd.print(L"   РАССТОЯНИЕ   ");
 
-    lcd.setCursor(0, 1);
-
-    // FIXME дописать функцию, которая определяла бы длину числа и подстраивало его по середине строки
-    lcd.print("    ");
-    lcd.print(String(distanceToPrint));
-    lcd.print(L" см");
+    printLength(distanceToPrint, 1);
 }
 
 void printResult(long timerTimeToPrint){
@@ -712,6 +707,15 @@ void encoder(){
         counter++;
         break;
     }
+}
+
+void printLength(double length, byte line){
+  // Проверка чтобы значение было либо 1, либо 0
+  line = line != 0 ? 1 : line;
+  lcd.setCursor(0, line);
+
+  lcd.print(String(length));
+  lcd.print(L" см");
 }
 
 void printTime(long time, byte line){
