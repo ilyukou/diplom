@@ -723,25 +723,24 @@ void printTime(long time, byte line){
   // Проверка чтобы значение было либо 1, либо 0
   line = line != 0 ? 1 : line;
 
-  // example. time = 5672000 millis
-  long second = time / 1000000; // 5
-  long millisecond = time - second * 1000000; // 672000
-  millisecond = millisecond / 100; // 6720
-
-  // Так как из 5 672 000 получаем 5,672 - того длина равняется длине числа -3
-  long length = String(time).length() - 3;
-
   // Очистка линии дисплея от прошлых значений
   cleanLineOnLCD(line);
 
   // Устанаваливаем курсор на нужную линию
   lcd.setCursor(0, line);
 
-  lcd.print(String(second));
-  lcd.print(".");
-  lcd.print(String(millisecond));
+  lcd.print(convertTimeToString(time));
   lcd.print(L" сек.");
   
+}
+
+String convertTimeToString(long time){
+  // example. time = 5672000 millis
+  long second = time / 1000000; // 5
+  long millisecond = time - second * 1000000; // 672000
+  millisecond = millisecond / 100; // 6720
+
+  return String(second) + "." + String(millisecond);
 }
 
 void cleanUpperLine(){
