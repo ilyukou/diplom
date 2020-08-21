@@ -469,8 +469,7 @@ void printOscillation(long time, int numberOfOscillation){
 
 // нужно взять 2 кнопки (аналоговые) и проверять нажаты ли они
 
-void stopwatch()
-{ // Секундомер
+void stopwatch(){ // Секундомер
 
   const byte analogPinForStartButtonOfStopWatch = analogPin_0_startMeasurementButton; //номер порта для старта
   const byte analogPinForStopButtonOfStopWatch = analogPin_1_stopMeasurementButton;  //номер порта для стопа
@@ -603,8 +602,7 @@ void timer(){ // Таймер
   } while (!isEncoderButtonPressed);
 }
 
-void printPreViewForTimer(double setTimeToPrint)
-{
+void printPreViewForTimer(double setTimeToPrint){
   lcd.setCursor(0, 0);
   lcd.clear();
   
@@ -714,6 +712,9 @@ void printLength(double length, byte line){
   line = line != 0 ? 1 : line;
   lcd.setCursor(0, line);
 
+  // Очистка линии дисплея от прошлых значений
+  cleanLineOnLCD(line);
+
   lcd.print(String(length));
   lcd.print(L" см");
 }
@@ -730,6 +731,9 @@ void printTime(long time, byte line){
   // Так как из 5 672 000 получаем 5,672 - того длина равняется длине числа -3
   long length = String(time).length() - 3;
 
+  // Очистка линии дисплея от прошлых значений
+  cleanLineOnLCD(line);
+
   // Устанаваливаем курсор на нужную линию
   lcd.setCursor(0, line);
 
@@ -738,6 +742,14 @@ void printTime(long time, byte line){
   lcd.print(String(millisecond));
   lcd.print(L" сек.");
   
+}
+
+void cleanUpperLine(){
+  cleanLineOnLCD(0);
+}
+
+void cleanBottomLine(){
+  cleanLineOnLCD(1);
 }
 
 void cleanLineOnLCD(byte line){
