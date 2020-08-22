@@ -320,6 +320,8 @@ void linearMovement(int typeMode){ // Линейного перемещения
 
 void countingLinearMovement(double length){
 
+    Serial.println("В методе подсчёта импульсов");
+
     // Переводит длину в требуемое количество импульсов для окончания счёта
     long count = convertLengthToImpulse(length);
 
@@ -334,6 +336,9 @@ void countingLinearMovement(double length){
 
     // Запоминает время начала отсчёта
     long startTime = micros();
+
+    Serial.println("Количество требуемых импульсов ");
+    Serial.print(count);
 
     // Работает до момент когда пришедших импульсов будет столько же сколько надо для данной длины
     while(countImpulse < count){
@@ -350,6 +355,14 @@ void countingLinearMovement(double length){
 
             // Новое значение присваиваетя старому значению  
             lastState = newState;
+
+            Serial.println(countImpulse);
+        }
+
+        // Остановка магнита по кнопки
+        if (isAnalogButtonPressed(analogPin_3_stopRemoteControlButton)){
+          setRealyStatus(true);
+          countImpulse = count;
         }
     }
 
@@ -710,11 +723,12 @@ void encoder(){
 void printLength(double length, byte line){
   // Проверка чтобы значение было либо 1, либо 0
   line = line != 0 ? 1 : line;
-  lcd.setCursor(0, line);
 
   // Очистка линии дисплея от прошлых значений
   cleanLineOnLCD(line);
 
+  lcd.setCursor(0, line);
+  Serial.println(length);
   lcd.print(String(length));
   lcd.print(L" см");
 }
