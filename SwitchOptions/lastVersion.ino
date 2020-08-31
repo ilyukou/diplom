@@ -298,16 +298,17 @@ void linearMovement(int typeMode){ // Линейного перемещения
             printLinearMovementDistance(needDistance);
         }
 
+        Serial.println(digitalRead(digitalPin_5_Optocoupler));
 
         if(needDistance > 0 ){
             // Старт по кнопке отсчёта движения
-            if (isAnalogButtonPressed(analogPin_0_startMeasurementButton) && typeMode == 0){
+            if (typeMode == 0 && isAnalogButtonPressed(analogPin_0_startMeasurementButton)){
                 printLinearMovementRun();
                 countingLinearMovement(needDistance);
             }
 
             //  Старт по оптопаре отсчёта движения
-            if (digitalRead(digitalPin_5_Optocoupler) == LOW  && typeMode == 1){
+            if (typeMode == 1 && digitalRead(digitalPin_5_Optocoupler) == LOW){
                 printLinearMovementRun();
                 countingLinearMovement(needDistance);
             }
