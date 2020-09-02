@@ -31,8 +31,8 @@ const int analogPin_7 = 7; // внешнее ДУ
 
 // Инициализация глобальных переменных
 int8_t counter = 0;
-const double step =  0.0828; // cm
-
+const double step = 0.142;  // cm 0.0828;
+ 
 // Функции энкодера
 unsigned long CurrentTime, LastTime;
 enum eEncoderState{
@@ -278,7 +278,7 @@ void linearMovement(int typeMode){ // Линейного перемещения
 
     isNeedPreView = true;
 
-    counter = 0;
+    counter = 62.5;
     int last = counter;
 
     delay(50);
@@ -305,12 +305,14 @@ void linearMovement(int typeMode){ // Линейного перемещения
             if (typeMode == 0 && isAnalogButtonPressed(analogPin_0_startMeasurementButton)){
                 printLinearMovementRun();
                 countingLinearMovement(needDistance);
+                isNeedPreView = true;
             }
 
             //  Старт по оптопаре отсчёта движения
             if (typeMode == 1 && digitalRead(digitalPin_5_Optocoupler) == LOW){
                 printLinearMovementRun();
                 countingLinearMovement(needDistance);
+                isNeedPreView = true;
             }
         }
 
