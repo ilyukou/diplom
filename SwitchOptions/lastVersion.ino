@@ -31,7 +31,7 @@ const int analogPin_7 = 7; // внешнее ДУ
 
 // Инициализация глобальных переменных
 int8_t counter = 0;
-const double step = 0.142;  // cm 0.0828;
+const double step = 0.5;  // cm 0.0828;  // Подстроечный резистор 0.4 Ом
  
 // Функции энкодера
 unsigned long CurrentTime, LastTime;
@@ -180,10 +180,10 @@ void printOption(){
 
   lcd.setCursor(0, 1);
   
-  if (counter > 5){
+  if (counter > 6){
     counter = 0;
   } else if (counter < 0) {
-    counter = 5;
+    counter = 6;
   }
 
 
@@ -211,6 +211,10 @@ void printOption(){
 
     case 5: // ТАЙМЕР
         lcd.print(L"6. ТАЙМЕР");
+        break;
+
+    case 6: // РАССТОЯНИЕ
+        lcd.print(L"7. РАССТОЯНИЕ");
         break;
   }
 }
@@ -258,6 +262,12 @@ void goToOption(){
             counter = 5; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
             exitFromOption();
             break;
+
+        case 6: // РАССТОЯНИЕ
+            distance();
+            counter = 6; // вдруг внутри опции изменялся counter, ему нужно присвоить прежнее значение
+            exitFromOption();
+            break;
   }
 }
 
@@ -278,7 +288,7 @@ void linearMovement(int typeMode){ // Линейного перемещения
 
     isNeedPreView = true;
 
-    counter = 62.5;
+    counter = 30;
     int last = counter;
 
     delay(50);
@@ -646,6 +656,85 @@ void printWhenTimeEndsForTimer(){
 /*********************************** ОКОНЧАНИЕ МЕТОДОВ ТАЙМЕРА ***********************************/
 
 
+/*********************************** НАЧАЛО МЕТОДОВ РАССТОЯНИЕ ***********************************/
+void distance(){
+  int count = 0;
+
+  delay(50);
+
+  // Опрос последнего состояния энкодера
+  int lastState = digitalRead(digitalPin_8_impulseCounter);
+
+  int newState = lastState;
+
+  printDistanseMenu();
+  do {
+    
+    if (isAnalogButtonPressed(analogPin_0_startMeasurementButton)){
+      printLinearMovementRun();
+
+      do {
+
+        // Опрашивает состояние энкодера
+        newState = digitalRead(digitalPin_8_impulseCounter);
+
+        // Пример: Если перед запуском было состояние 0, а новое 0 - значит энкодер еще не повернулся
+        // Если же его состояние 1 - значит произошел поворот энкодера и он поменял состояние
+        if(newState != lastState){
+
+            // Счётчик прибавляет единицу
+            count++;
+
+            // Новое значение присваиваетя старому значению  
+            lastState = newState;
+        }
+        
+        if (isAnalogButtonPressed(analogPin_1_stopMeasurementButton)){
+          printDistanseResult(count);
+          delay(5000);
+
+          count=0;
+          printDistanseMenu();
+        }
+        
+        encoder();
+      } while (!isEncoderButtonPressed);
+    }
+
+    encoder();
+  } while (!isEncoderButtonPressed);
+}
+
+void printDistanseResult(int count){
+  lcd.clear();
+
+  lcd.setCursor(1,0);
+  lcd.print(String(convertImpulseToLength(count)) + " см");
+  Serial.println(String(convertImpulseToLength(count)));
+
+  lcd.setCursor(0,1);
+  lcd.print(String(count));
+  Serial.println(String(count));
+}
+
+void printDistanseStart(){
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print(L"Подсчёт");
+  Serial.println("Подсчёт");
+}
+
+void printDistanseMenu(){
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print(L"РАССТОЯНИЕ");
+  Serial.println("РАССТОЯНИЕ");
+}
+
+
+
+/*********************************** ОКОНЧАНИЕ МЕТОДОВ РАССТОЯНИЕ ***********************************/
+
 /*********************************** НАЧАЛО БАЗОВЫХ МЕТОДОВ ***********************************/
 
 bool isAnalogButtonPressed(byte analogPinNumber){
@@ -690,6 +779,11 @@ void checkStatusRealyButton_andSetNewStatusToRealy(){
 // Переводит длину в требуемое количество импульсов для окончания счёта
 int convertLengthToImpulse(double length){
     return length / step;
+}
+
+// Переводит  количество импульсов в длину 
+double convertImpulseToLength(int impulse){
+    return step * impulse;
 }
 
 void encoder(){
